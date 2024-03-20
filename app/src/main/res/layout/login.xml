@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/smiley4"
+    android:orientation="vertical"
+    tools:context=".LoginActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/smileyText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginLeft="15dp"
+                    android:padding="8dp"
+                    android:background="@drawable/white_border"
+                    android:text="@string/smiley"
+                    android:textColor="@color/black"
+                    android:textSize="45sp" />
+
+                <TextView
+                    android:id="@+id/loginText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginLeft="15dp"
+                    android:padding="8dp"
+                    android:background="@drawable/white_border"
+                    android:text="@string/login"
+                    android:textColor="@color/black"
+                    android:textSize="30sp" />
+
+                <EditText
+                    android:id="@+id/login_username"
+                    android:layout_width="350dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/border"
+                    android:drawableLeft="@drawable/baseline_email_24"
+                    android:drawablePadding="8dp"
+                    android:hint="@string/username"
+                    android:textColorHint="@color/grey"
+                    android:padding="8dp"/>
+
+                <EditText
+                    android:id="@+id/login_password"
+                    android:layout_width="350dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/border"
+                    android:drawableLeft="@drawable/baseline_lock_24"
+                    android:drawablePadding="8dp"
+                    android:hint="@string/password"
+                    android:textColorHint="@color/grey"
+                    android:inputType="textPassword"
+                    android:padding="8dp" />
+
+                <Button
+                    android:id="@+id/login_button"
+                    android:layout_width="350dp"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="30dp"
+                    android:text="@string/login"
+                    android:backgroundTint="@color/yellow"
+                    android:textSize="20sp"
+                    app:cornerRadius="30dp" />
+
+                <TextView
+                    android:id="@+id/forgotPasswordText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="14dp"
+                    android:padding="8dp"
+                    android:background="@drawable/white_border"
+                    android:text="@string/forgot_password"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/registerRedirectText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="14dp"
+                    android:padding="8dp"
+                    android:background="@drawable/white_border"
+                    android:text="@string/register_redirect"
+                    android:textColor="@color/black"
+                    android:textSize="18sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">Social Network</string>
+    <string name="smiley">Smiley</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="register">Register</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="register_redirect">Don\'t have an account? Register</string>
+    <string name="login_redirect">Already have an account? Login</string>
+    <string name="email">Email</string>
+    <string name="firstname">Fistname</string>
+    <string name="lastname">Lastname</string>
+
 </resources>
