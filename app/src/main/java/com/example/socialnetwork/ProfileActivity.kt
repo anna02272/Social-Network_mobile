@@ -18,25 +18,25 @@ class ProfileActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.bottom_home -> {
                     startActivity(Intent(applicationContext, MainActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
                     finish()
                     true
                 }
                 R.id.bottom_search -> {
                     startActivity(Intent(applicationContext, SearchActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
                     finish()
                     true
                 }
                 R.id.bottom_groups -> {
                     startActivity(Intent(applicationContext, GroupsActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
                     finish()
                     true
                 }
                 R.id.bottom_notifications -> {
                     startActivity(Intent(applicationContext, NotificationsActivity::class.java))
-                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
                     finish()
                     true
                 }

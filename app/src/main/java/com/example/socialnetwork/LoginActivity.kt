@@ -7,6 +7,9 @@ import android.widget.Button
 import android.widget.TextView
 
 class LoginActivity : AppCompatActivity() {
+    override fun onBackPressed() {
+        return
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)

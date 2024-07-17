@@ -1,16 +1,34 @@
 <resources>
     <string name="app_name">Social Network</string>
     <string name="smiley">Smiley</string>
+
+    <!-- Authentication -->
     <string name="login">Login</string>
+    <string name="register">Register</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
-    <string name="confirm_password">Confirm Password</string>
-    <string name="register">Register</string>
-    <string name="forgot_password">Forgot password?</string>
-    <string name="register_redirect">Don\'t have an account? Register</string>
-    <string name="login_redirect">Already have an account? Login</string>
     <string name="email">Email</string>
     <string name="firstname">Fistname</string>
     <string name="lastname">Lastname</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="register_redirect">Don\'t have an account? Register</string>
+    <string name="login_redirect">Already have an account? Login</string>
+
+    <!-- Posts -->
+    <string name="like">Like</string>
+    <string name="dislike">Dislike</string>
+    <string name="heart">Heart</string>
+    <string name="comment">Comment</string>
+    <string name="like_total">Total likes</string>
+    <string name="dislike_total">Total dislikes</string>
+    <string name="heart_total">Total hearts</string>
+    <string name="post_content">Post content</string>
+    <string name="date">Date</string>
+    <string name="zero">0</string>
+    <string name="image">Image</string>
+    <string name="more_options">More options</string>
+
+
 
 </resources>
