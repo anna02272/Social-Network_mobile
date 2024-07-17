@@ -28,7 +28,17 @@
     <string name="zero">0</string>
     <string name="image">Image</string>
     <string name="more_options">More options</string>
+    <string name="create_post">Create Post</string>
+    <string name="write_post">Write a post</string>
+    <string name="choose_files">Choose files</string>
+    <string name="no_file_chosen">No file chosen</string>
 
+    <!-- Menu -->
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="groups">Groups</string>
+    <string name="notifications">Notifications</string>
+    <string name="profile">Profile</string>
 
 
 </resources>

@@ -2,14 +2,19 @@ package com.example.socialnetwork
 
 import Post
 import PostAdapter
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.ListView
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -24,27 +29,31 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         val createPostButton = findViewById<Button>(R.id.createPostButton)
-        val createPostForm = findViewById<ConstraintLayout>(R.id.createPostForm)
-        val postEditText = findViewById<EditText>(R.id.postEditText)
-        val closeButton = findViewById<ImageButton>(R.id.closeButton)
+        val createPostPopup = findViewById<RelativeLayout>(R.id.createPostPopup)
+        val closePopupButton = findViewById<ImageView>(R.id.closePopupButton)
+        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
+        val createPostTextView = findViewById<EditText>(R.id.popupPostEditText)
 
-        postEditText.setOnClickListener {
-            createPostForm.visibility = View.VISIBLE
+      createPostButton.setOnClickListener {
+            dimBackgroundView.visibility = View.VISIBLE
+            createPostPopup.visibility = View.VISIBLE
         }
-        //ostaviti
-//        createPostButton.setOnClickListener {
-//            createPostForm.visibility = View.VISIBLE
-//        }
 
-        closeButton.setOnClickListener {
-            createPostForm.visibility = View.GONE
+        closePopupButton.setOnClickListener {
+            dimBackgroundView.visibility = View.GONE
+            createPostPopup.visibility = View.GONE
+
+            createPostTextView.text.clear()
+
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
         }
 
        //obrisati
-        createPostButton.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-        }
+//        createPostButton.setOnClickListener {
+//            val intent = Intent(this, LoginActivity::class.java)
+//            startActivity(intent)
+//        }
 
         bottomNavigationView.selectedItemId = R.id.bottom_home
 

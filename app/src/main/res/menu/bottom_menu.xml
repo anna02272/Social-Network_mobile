@@ -5,27 +5,27 @@
     <item
         android:id="@+id/bottom_home"
         android:icon="@drawable/home"
-        android:title="Home" />
+        android:title="@string/home" />
 
     <item
         android:id="@+id/bottom_search"
         android:icon="@drawable/search"
-        android:title="Search" />
+        android:title="@string/search"/>
 
     <item
         android:id="@+id/bottom_groups"
         android:icon="@drawable/baseline_groups_24"
-        android:title="Groups" />
+        android:title="@string/groups" />
 
     <item
         android:id="@+id/bottom_notifications"
         android:icon="@drawable/baseline_email_24"
-        android:title="Notifications" />
+        android:title="@string/notifications"/>
 
     <item
         android:id="@+id/bottom_profile"
         android:icon="@drawable/baseline_account_circle_24"
-        android:title="Profile" />
+        android:title="@string/profile" />
 
 
 </menu>
