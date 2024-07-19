@@ -1,6 +1,6 @@
 package com.example.socialnetwork.model
 
-class Post(
+class Comment(
     private val profileImageResource: Int,
     private val username: String,
     private val date: String,

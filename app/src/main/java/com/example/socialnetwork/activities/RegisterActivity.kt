@@ -1,9 +1,10 @@
-package com.example.socialnetwork
+package com.example.socialnetwork.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.socialnetwork.R
 
 class RegisterActivity : AppCompatActivity() {
     override fun onBackPressed() {
@@ -11,7 +12,7 @@ class RegisterActivity : AppCompatActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.register)
+        setContentView(R.layout.activity_register)
 
         val createPostButton = findViewById<TextView>(R.id.loginRedirectText)
 

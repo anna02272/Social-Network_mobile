@@ -10,5 +10,6 @@
     <color name="blue">#496989</color>
     <color name="red">#BF3131</color>
     <color name="grey">#747264</color>
+    <color name="light_grey">#E9ECEF</color>
     <color name="vector_fill">#FFFFFF</color>
 </resources>

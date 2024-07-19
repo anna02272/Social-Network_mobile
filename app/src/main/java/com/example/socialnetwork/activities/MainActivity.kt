@@ -1,7 +1,7 @@
-package com.example.socialnetwork
+package com.example.socialnetwork.activities
 
-import Post
-import PostAdapter
+import com.example.socialnetwork.model.Post
+import com.example.socialnetwork.adpters.PostAdapter
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
@@ -10,16 +10,14 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.socialnetwork.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -33,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         val closePopupButton = findViewById<ImageView>(R.id.closePopupButton)
         val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
         val createPostTextView = findViewById<EditText>(R.id.popupPostEditText)
+        val listView: ListView = findViewById(R.id.postsListView)
 
       createPostButton.setOnClickListener {
             dimBackgroundView.visibility = View.VISIBLE
@@ -62,25 +61,37 @@ class MainActivity : AppCompatActivity() {
                 R.id.bottom_home -> true
                 R.id.bottom_search -> {
                     startActivity(Intent(applicationContext, SearchActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left
+                    )
                     finish()
                     true
                 }
                 R.id.bottom_groups -> {
                     startActivity(Intent(applicationContext, GroupsActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left
+                    )
                     finish()
                     true
                 }
                 R.id.bottom_notifications -> {
                     startActivity(Intent(applicationContext, NotificationsActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left
+                    )
                     finish()
                     true
                 }
                 R.id.bottom_profile -> {
                     startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.slide_in_right, R.anim.slide_out_left)
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                        R.anim.slide_in_right,
+                        R.anim.slide_out_left
+                    )
                     finish()
                     true
                 }
@@ -97,9 +108,13 @@ class MainActivity : AppCompatActivity() {
         posts.add(Post(R.drawable.smiley_circle, "User2", "13 Jan 2024", "Post content 6"))
 
         val adapter = PostAdapter(this, posts)
-
-        val listView: ListView = findViewById(R.id.postsListView)
+        adapter.commentButtonClickListener = this
         listView.adapter = adapter
 
+
+    }
+    override fun onCommentButtonClick(post: Post) {
+        val commentActivity = CommentActivity()
+        commentActivity.show(supportFragmentManager, "commentActivity")
     }
 }
