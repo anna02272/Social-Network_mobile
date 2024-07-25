@@ -1,6 +1,5 @@
 package com.example.socialnetwork.activities
 
-import com.example.socialnetwork.adpters.CommentAdapter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,8 +8,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import com.example.socialnetwork.R
+import com.example.socialnetwork.adpters.CommentAdapter
 import com.example.socialnetwork.model.Comment
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class CommentActivity : BottomSheetDialogFragment() {
@@ -28,6 +27,8 @@ class CommentActivity : BottomSheetDialogFragment() {
         val commentsListView: ListView = view.findViewById(R.id.commentsListView)
         val createPostButton: Button = view.findViewById(R.id.createPostButton)
         val contentTextView: EditText = view.findViewById(R.id.contentTextView)
+        val header: View = view.findViewById(R.id.header)
+        val footer: View = view.findViewById(R.id.createCommentBox)
 
         val comments = ArrayList<Comment>()
         comments.add(Comment(R.drawable.smiley_circle, "User1", "12 Jan 2024", "This is an example Comment content. It can be any text that a user might comment on social network app."))
@@ -40,6 +41,7 @@ class CommentActivity : BottomSheetDialogFragment() {
         val adapter = CommentAdapter(requireContext(), comments)
 
         commentsListView.adapter = adapter
-    }
 
     }
+
+}

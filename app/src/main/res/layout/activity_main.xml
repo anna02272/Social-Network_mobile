@@ -7,13 +7,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".activities.MainActivity">
 
-    <View
-        android:id="@+id/dimBackgroundView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#80000000"
-        android:visibility="gone" />
-
     <LinearLayout
         android:id="@+id/createPostBox"
         android:layout_width="match_parent"
@@ -49,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@null"
-                android:hint="What's on your mind?"
+                android:hint="@string/what_s_on_your_mind"
                 android:paddingLeft="10dp"
                 android:enabled="false"
                 android:focusable="false"
@@ -59,10 +52,18 @@
                 android:id="@+id/createPostButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Create Post"
+                android:text="@string/create_post"
                 android:backgroundTint="@color/yellow"/>
 
         </LinearLayout>
+
+        <Button
+            android:id="@+id/sort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sort"
+            android:backgroundTint="@color/yellow"/>
+
 
         <View
             android:layout_width="match_parent"
@@ -93,6 +94,13 @@
         app:itemRippleColor="@android:color/transparent"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_menu" />
+
+    <View
+        android:id="@+id/dimBackgroundView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone" />
 
     <include
         android:id="@+id/createPostPopupInclude"

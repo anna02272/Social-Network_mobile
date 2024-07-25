@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="vector_fill">#201E1E</color>
+    <color name="light_grey">#747264</color>
 </resources>

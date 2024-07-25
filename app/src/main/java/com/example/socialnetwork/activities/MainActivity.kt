@@ -48,12 +48,6 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
             imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
         }
 
-       //obrisati
-//        createPostButton.setOnClickListener {
-//            val intent = Intent(this, LoginActivity::class.java)
-//            startActivity(intent)
-//        }
-
         bottomNavigationView.selectedItemId = R.id.bottom_home
 
         bottomNavigationView.setOnItemSelectedListener { item ->

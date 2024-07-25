@@ -18,7 +18,7 @@
             android:id="@+id/headerTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Comments"
+            android:text="@string/comments"
             android:textSize="14sp"
             android:gravity="center_horizontal"
             android:textStyle="bold"/>
@@ -91,7 +91,7 @@
                 android:id="@+id/createPostButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Post"
+                android:text="@string/post"
                 android:textColor="@color/vector_fill"
                 android:backgroundTint="@color/yellow"/>
 

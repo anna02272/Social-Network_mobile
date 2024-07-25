@@ -6,13 +6,51 @@
     android:layout_height="match_parent"
     tools:context=".activities.GroupsActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/createGroupBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Groups"
-        android:textColor="@color/yellow"
-        android:layout_centerInParent="true"
-        android:textSize="36sp" />
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/coverImage"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:src="@drawable/smiley_background_rotate"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/image" />
+
+        <Button
+            android:id="@+id/createGroupButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_new_group"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/yellow"/>
+
+        <TextView
+            android:id="@+id/groupsTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/groups"
+            android:textAlignment="center"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:padding="8dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@android:color/darker_gray" />
+
+        </LinearLayout>
+
+    <android.widget.ListView
+        android:id="@+id/groupsListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/createGroupBox"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
@@ -30,5 +68,19 @@
         app:itemRippleColor="@android:color/transparent"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_menu" />
+
+    <View
+        android:id="@+id/dimBackgroundView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/createGroupPopupInclude"
+        layout="@layout/create_group_popup"
+        />
+
+
 
 </RelativeLayout>

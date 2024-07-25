@@ -32,6 +32,8 @@
     <string name="write_post">Write a post</string>
     <string name="choose_files">Choose files</string>
     <string name="no_file_chosen">No file chosen</string>
+    <string name="sort">ascending</string>
+    <string name="what_s_on_your_mind">What\'s on your mind?</string>
 
     <!-- Menu -->
     <string name="home">Home</string>
@@ -39,9 +41,21 @@
     <string name="groups">Groups</string>
     <string name="notifications">Notifications</string>
     <string name="profile">Profile</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="write_a_comment">Write a comment</string>
 
+    <!-- Comments-->
+    <string name="write_a_comment">Write a comment</string>
+    <string name="comments">Comments</string>
+    <string name="post">Post</string>
+
+    <!-- Groups-->
+    <string name="create_new_group">Create new group</string>
+    <string name="create_group">Create group</string>
+    <string name="join_group">Join group</string>
+    <string name="group_name">Group Name</string>
+    <string name="group_description">Group Description</string>
+    <string name="creation_date">Creation date:</string>
+    <string name="group_admin">Group admin:</string>
+    <string name="write_name_of_group">Write name of group</string>
+    <string name="write_group_description">Write group description</string>
 
 </resources>
