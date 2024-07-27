@@ -6,13 +6,31 @@
     android:layout_height="match_parent"
     tools:context=".activities.NotificationsActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Notifications"
-        android:textColor="@color/yellow"
-        android:layout_centerInParent="true"
-        android:textSize="36sp" />
+        app:tabMode="auto"
+        app:tabGravity="fill"
+        style="@style/CustomTabLayout"
+        android:layout_below="@id/coverImage"
+        android:contentDescription="@string/tab_layout_desc" />
+
+    <ImageView
+        android:id="@+id/coverImage"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:src="@drawable/smiley_background_rotate"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/image"
+        android:layout_alignParentTop="true"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tabLayout"
+        android:layout_weight="1"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"

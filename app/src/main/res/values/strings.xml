@@ -58,4 +58,21 @@
     <string name="write_name_of_group">Write name of group</string>
     <string name="write_group_description">Write group description</string>
 
+    <!-- Notifications-->
+    <string name="friend_request">Friend Requests</string>
+    <string name="comment_reports">Comment Reports</string>
+    <string name="user_reports">User Reports</string>
+    <string name="blocked_users">Blocked Users</string>
+    <string name="accept">Accept</string>
+    <string name="delete_request">Delete request</string>
+    <string name="block_user">Block User</string>
+    <string name="unblock_user">Unblock User</string>
+    <string name="tab_layout_desc">Switch between notifications</string>
+    <string name="post_reports">Post Reports</string>
+    <string name="reason_for_reporting">Reason for reporting: </string>
+    <string name="report_for_post">Report for post with content: </string>
+    <string name="report_for_comment">Report for comment with text: </string>
+    <string name="report_for_user">Report for user with username: </string>
+    <string name="reason">Reason</string>
+
 </resources>

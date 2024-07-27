@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 
+class RequestsFragment : Fragment() {
 
-class CommentFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_comment, container, false)
+        return inflater.inflate(R.layout.fragment_request, container, false)
     }
 
 }
