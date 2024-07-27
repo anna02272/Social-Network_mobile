@@ -5,7 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.Group
 
@@ -24,6 +27,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
         val descriptionTextView = view.findViewById<TextView>(R.id.descriptionTextView)
         val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
         val adminTextView = view.findViewById<TextView>(R.id.adminTextView)
+        val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
         group?.let {
             nameTextView.text = it.getName()
@@ -32,6 +36,34 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
             adminTextView.text = it.getGroupAdmin()
         }
 
+        moreOptionsButton.setOnClickListener { view ->
+            showPopupMenu(view)
+        }
+
         return view
+    }
+
+    private fun showPopupMenu(view: View) {
+        val popup = PopupMenu(context, view)
+
+        val menu = popup.menu
+        menu.add(0, R.id.edit, 1, context.getString(R.string.edit_group))
+        menu.add(0, R.id.delete, 2, context.getString(R.string.suspend_group))
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.edit -> {
+                    Toast.makeText(context, "Edit Group clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.delete -> {
+                    Toast.makeText(context, "Suspend Group clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
     }
 }

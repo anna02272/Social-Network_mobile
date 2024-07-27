@@ -8,7 +8,7 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="email">Email</string>
-    <string name="firstname">Fistname</string>
+    <string name="firstname">Firstname</string>
     <string name="lastname">Lastname</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="forgot_password">Forgot password?</string>
@@ -34,6 +34,9 @@
     <string name="no_file_chosen">No file chosen</string>
     <string name="sort">ascending</string>
     <string name="what_s_on_your_mind">What\'s on your mind?</string>
+    <string name="edit_post">Edit Post</string>
+    <string name="delete_post">Delete Post</string>
+    <string name="report_post">Report Post</string>
 
     <!-- Menu -->
     <string name="home">Home</string>
@@ -46,6 +49,10 @@
     <string name="write_a_comment">Write a comment</string>
     <string name="comments">Comments</string>
     <string name="post">Post</string>
+    <string name="edit_comment">Edit Comment</string>
+    <string name="delete_comment">Delete Comment</string>
+    <string name="report_comment">Report Comment</string>
+    <string name="reply_to_comment">Reply To Comment</string>
 
     <!-- Groups-->
     <string name="create_new_group">Create new group</string>
@@ -57,6 +64,8 @@
     <string name="group_admin">Group admin:</string>
     <string name="write_name_of_group">Write name of group</string>
     <string name="write_group_description">Write group description</string>
+    <string name="edit_group">Edit Group</string>
+    <string name="suspend_group">Suspend Group</string>
 
     <!-- Notifications-->
     <string name="friend_request">Friend Requests</string>

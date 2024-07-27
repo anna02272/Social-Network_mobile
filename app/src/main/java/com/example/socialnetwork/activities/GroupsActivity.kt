@@ -108,4 +108,5 @@ class GroupsActivity : AppCompatActivity() {
         groupsListView.adapter = adapter
 
     }
+
 }

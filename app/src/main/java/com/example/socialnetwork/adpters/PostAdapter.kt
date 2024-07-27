@@ -9,7 +9,9 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import com.example.socialnetwork.activities.CommentActivity
 import com.example.socialnetwork.model.Post
 
@@ -40,6 +42,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         val dateTextView = convertView.findViewById<TextView>(R.id.dateTextView)
         val contentTextView = convertView.findViewById<TextView>(R.id.contentTextView)
         val commentButton = convertView.findViewById<ImageButton>(R.id.commentButton)
+        val moreOptionsButton = convertView.findViewById<ImageButton>(R.id.moreOptionsButton)
 
 
         post?.let {
@@ -55,7 +58,40 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             }
         }
 
+        moreOptionsButton.setOnClickListener { view ->
+            showPopupMenu(view)
+        }
+
         return convertView
 
     }
+    private fun showPopupMenu(view: View) {
+        val popup = PopupMenu(mContext, view)
+
+        val menu = popup.menu
+        menu.add(0, R.id.edit, 0, mContext.getString(R.string.edit_post))
+        menu.add(0, R.id.delete, 1, mContext.getString(R.string.delete_post))
+        menu.add(0, R.id.report, 2, mContext.getString(R.string.report_post))
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.edit -> {
+                    Toast.makeText(mContext, "Edit Post clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.delete -> {
+                    Toast.makeText(mContext, "Delete Post clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                R.id.report -> {
+                    Toast.makeText(mContext, "Report Post clicked", Toast.LENGTH_SHORT).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popup.show()
+    }
+
 }
