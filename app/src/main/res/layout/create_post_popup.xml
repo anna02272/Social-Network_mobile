@@ -106,23 +106,14 @@
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
 
-                <ImageButton
-                    android:id="@+id/image"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/baseline_add_to_photos_24"
-                    android:background="@color/yellow"
-                    android:contentDescription="@string/image"
-                    android:layout_margin="10dp"/>
-
-
                 <Button
                     android:id="@+id/chooseFileButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/yellow"
                     android:text="@string/choose_files"
-                    android:layout_margin="10dp"/>
+                    android:layout_margin="10dp"
+                    android:drawableLeft="@drawable/baseline_add_to_photos_24"/>
 
                 <TextView
                     android:id="@+id/fileNameTextView"

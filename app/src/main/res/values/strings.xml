@@ -86,4 +86,18 @@
     <string name="create_report">Create Report</string>
     <string name="select_reason">Select a reason for reporting:</string>
 
+    <!-- Profile -->
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="profile_name">Profile Name</string>
+    <string name="about">About</string>
+    <string name="change_password">Change Password</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="show_password">Show Password</string>
+    <string name="change_photo">Change Photo</string>
+    <string name="last_seen">"Last seen: "</string>
+    <string name="friends">Friends:</string>
+    <string name="groups_profile">Groups:</string>
+
 </resources>
