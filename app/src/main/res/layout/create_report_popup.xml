@@ -7,7 +7,7 @@
     android:padding="10dp">
 
     <RelativeLayout
-        android:id="@+id/createGroupPopup"
+        android:id="@+id/createReportPopup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -18,7 +18,7 @@
         android:visibility="gone">
 
         <ImageView
-            android:id="@+id/closeGroupPopupButton"
+            android:id="@+id/closeReportPopupButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
@@ -31,12 +31,12 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/createGroupTextView"
+                android:id="@+id/createReportTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:paddingBottom="10dp"
-                android:text="@string/create_group"
+                android:text="@string/create_report"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -48,26 +48,40 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:padding="10dp">
 
-                <TextView
-                    android:id="@+id/nameTextView"
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/group_name"
-                    android:textSize="17sp"
-                    android:padding="10dp"
-                    android:layout_gravity="start"/>
+                    android:padding="2dp"
+                    android:background="@drawable/image_border">
 
-                <EditText
-                    android:id="@+id/popupNameEditText"
-                    android:layout_width="match_parent"
+                    <ImageView
+                        android:id="@+id/popupProfileImage"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:src="@drawable/smiley_circle"
+                        android:scaleType="centerCrop"/>
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/edit_text_border"
-                    android:hint="@string/write_name_of_group"
-                    android:padding="10dp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/usernameTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/username"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"/>
+
+                </LinearLayout>
+
             </LinearLayout>
 
             <LinearLayout
@@ -77,22 +91,24 @@
                 android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/descriptionTextView"
+                    android:id="@+id/reasonTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/group_description"
+                    android:text="@string/select_reason"
                     android:textSize="17sp"
-                    android:padding="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
                     android:layout_gravity="start"/>
 
-                <EditText
-                    android:id="@+id/popupDescriptionEditText"
+                <Spinner
+                    android:id="@+id/popupReasonSpinner"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/edit_text_border"
-                    android:hint="@string/write_group_description"
-                    android:padding="10dp" />
+                    android:padding="10dp"
+                    />
+
             </LinearLayout>
 
 
@@ -100,14 +116,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="0.2dp"
                 android:background="@android:color/darker_gray"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="15dp"/>
 
             <Button
-                android:id="@+id/popupCreateGroupButton"
+                android:id="@+id/popupCreateReportButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/yellow"
-                android:text="@string/create_group"
+                android:textColor="@color/vector_fill"
+                android:text="@string/create_report"
                 android:layout_margin="10dp"/>
         </LinearLayout>
     </RelativeLayout>

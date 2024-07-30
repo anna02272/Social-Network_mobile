@@ -18,6 +18,11 @@ class FriendRequestsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_friend_requests, container, false)
 
+        fillFriendRequestArray(view)
+
+        return view
+    }
+    private fun fillFriendRequestArray(view: View) {
         val friendRequestsListView = view.findViewById<ListView>(R.id.friendRequestsListView)
 
         val friendRequests = ArrayList<FriendRequest>()
@@ -33,8 +38,6 @@ class FriendRequestsFragment : Fragment() {
         val adapter = FriendRequestAdapter(requireContext(), friendRequests)
 
         friendRequestsListView.adapter = adapter
-
-        return view
     }
 
 }

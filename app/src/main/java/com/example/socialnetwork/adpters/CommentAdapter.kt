@@ -30,7 +30,6 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
         val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
-
         comment?.let {
             profileImage.setImageResource(it.getProfileImageResource())
             usernameTextView.text = it.getUsername()
@@ -42,17 +41,12 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
             showPopupMenu(view)
         }
 
+
         return view
     }
 
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(context, view)
-
-        val menu = popup.menu
-        menu.add(0, R.id.reply, 0, context.getString(R.string.reply_to_comment))
-        menu.add(0, R.id.edit, 1, context.getString(R.string.edit_comment))
-        menu.add(0, R.id.delete, 2, context.getString(R.string.delete_comment))
-        menu.add(0, R.id.report, 3, context.getString(R.string.report_comment))
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
@@ -78,4 +72,5 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
 
         popup.show()
     }
+
 }

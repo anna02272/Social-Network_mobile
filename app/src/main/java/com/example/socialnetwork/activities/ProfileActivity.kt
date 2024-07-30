@@ -12,7 +12,11 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        setupBottomNavigation()
+    }
+    private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+
         bottomNavigationView.selectedItemId = R.id.bottom_profile
 
         bottomNavigationView.setOnItemSelectedListener { item ->

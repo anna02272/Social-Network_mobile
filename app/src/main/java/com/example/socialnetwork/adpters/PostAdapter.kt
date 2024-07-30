@@ -10,9 +10,11 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.activities.CommentActivity
+import com.example.socialnetwork.model.EReportReason
 import com.example.socialnetwork.model.Post
 
 class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
@@ -26,24 +28,28 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         fun onCommentButtonClick(post: Post)
     }
 
+    interface ReportButtonClickListener {
+        fun onReportButtonClick(post: Post)
+    }
+
     var commentButtonClickListener: CommentButtonClickListener? = null
+    var reportButtonClickListener: ReportButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var convertView = convertView
+        var view = convertView
         val post: Post? = getItem(position)
 
-        if (convertView == null) {
-            convertView =
+        if (view == null) {
+            view =
                 LayoutInflater.from(context).inflate(R.layout.fragment_post, parent, false)
         }
 
-        val profileImage = convertView!!.findViewById<ImageView>(R.id.profileImage)
-        val usernameTextView = convertView.findViewById<TextView>(R.id.usernameTextView)
-        val dateTextView = convertView.findViewById<TextView>(R.id.dateTextView)
-        val contentTextView = convertView.findViewById<TextView>(R.id.contentTextView)
-        val commentButton = convertView.findViewById<ImageButton>(R.id.commentButton)
-        val moreOptionsButton = convertView.findViewById<ImageButton>(R.id.moreOptionsButton)
-
+        val profileImage = view!!.findViewById<ImageView>(R.id.profileImage)
+        val usernameTextView = view.findViewById<TextView>(R.id.usernameTextView)
+        val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
+        val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
+        val commentButton = view.findViewById<ImageButton>(R.id.commentButton)
+        val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
         post?.let {
             profileImage.setImageResource(it.getProfileImageResource())
@@ -59,13 +65,15 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         }
 
         moreOptionsButton.setOnClickListener { view ->
-            showPopupMenu(view)
+            post?.let {
+                showPopupMenu(view, it)
+            }
         }
 
-        return convertView
+        return view
 
     }
-    private fun showPopupMenu(view: View) {
+    private fun showPopupMenu(view: View, post: Post) {
         val popup = PopupMenu(mContext, view)
 
         val menu = popup.menu
@@ -84,7 +92,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                     true
                 }
                 R.id.report -> {
-                    Toast.makeText(mContext, "Report Post clicked", Toast.LENGTH_SHORT).show()
+                    reportButtonClickListener?.onReportButtonClick(post)
                     true
                 }
                 else -> false

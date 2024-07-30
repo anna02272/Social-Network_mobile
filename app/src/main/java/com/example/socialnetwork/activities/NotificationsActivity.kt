@@ -12,7 +12,6 @@ import com.google.android.material.tabs.TabLayoutMediator
 
 
 class NotificationsActivity : AppCompatActivity() {
-
     private lateinit var viewPager: ViewPager2
     private lateinit var tabLayout: TabLayout
 
@@ -20,21 +19,13 @@ class NotificationsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notifications)
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        viewPager = findViewById(R.id.viewPager)
-        tabLayout = findViewById(R.id.tabLayout)
+        setupBottomNavigation()
 
-        viewPager.adapter = SectionsPagerAdapter(this)
-        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
-            tab.text = when (position) {
-                0 -> getString(R.string.friend_request)
-                1 -> getString(R.string.post_reports)
-                2 -> getString(R.string.comment_reports)
-                3 -> getString(R.string.user_reports)
-                4 -> getString(R.string.blocked_users)
-                else -> null
-            }
-        }.attach()
+        setupTabLayout()
+
+    }
+    private fun setupBottomNavigation() {
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
         bottomNavigationView.selectedItemId = R.id.bottom_notifications
 
@@ -81,5 +72,21 @@ class NotificationsActivity : AppCompatActivity() {
             }
         }
     }
+    private fun setupTabLayout() {
+        viewPager = findViewById(R.id.viewPager)
+        tabLayout = findViewById(R.id.tabLayout)
 
+        viewPager.adapter = SectionsPagerAdapter(this)
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = when (position) {
+                0 -> getString(R.string.friend_request)
+                1 -> getString(R.string.post_reports)
+                2 -> getString(R.string.comment_reports)
+                3 -> getString(R.string.user_reports)
+                4 -> getString(R.string.blocked_users)
+                else -> null
+            }
+        }.attach()
+
+    }
 }

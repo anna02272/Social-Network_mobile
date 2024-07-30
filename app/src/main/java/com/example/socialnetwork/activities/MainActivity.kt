@@ -1,52 +1,51 @@
 package com.example.socialnetwork.activities
 
-import com.example.socialnetwork.model.Post
-import com.example.socialnetwork.adpters.PostAdapter
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
+import android.widget.Spinner
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialnetwork.R
+import com.example.socialnetwork.adpters.PostAdapter
+import com.example.socialnetwork.model.EReportReason
+import com.example.socialnetwork.model.Post
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener  {
-
+class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener, PostAdapter.ReportButtonClickListener  {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        setupBottomNavigation()
+
+        showPostPopup()
+
+        fillPostsArray()
+
+        fillReportSpinner()
+
+    }
+    override fun onCommentButtonClick(post: Post) {
+        val commentActivity = CommentActivity()
+        commentActivity.show(supportFragmentManager, "commentActivity")
+    }
+    override fun onReportButtonClick(post: Post) {
+        showReportPopup()
+    }
+    private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
-        val createPostButton = findViewById<Button>(R.id.createPostButton)
-        val createPostPopup = findViewById<RelativeLayout>(R.id.createPostPopup)
-        val closePopupButton = findViewById<ImageView>(R.id.closePopupButton)
-        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
-        val createPostTextView = findViewById<EditText>(R.id.popupPostEditText)
-        val listView: ListView = findViewById(R.id.postsListView)
-
-      createPostButton.setOnClickListener {
-            dimBackgroundView.visibility = View.VISIBLE
-            createPostPopup.visibility = View.VISIBLE
-        }
-
-        closePopupButton.setOnClickListener {
-            dimBackgroundView.visibility = View.GONE
-            createPostPopup.visibility = View.GONE
-
-            createPostTextView.text.clear()
-
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
-        }
 
         bottomNavigationView.selectedItemId = R.id.bottom_home
 
@@ -92,6 +91,49 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
                 else -> false
             }
         }
+    }
+    private fun showPostPopup() {
+        val createPostButton = findViewById<Button>(R.id.createPostButton)
+        val createPostPopup = findViewById<RelativeLayout>(R.id.createPostPopup)
+        val closePopupButton = findViewById<ImageView>(R.id.closePostPopupButton)
+        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
+        val createPostTextView = findViewById<EditText>(R.id.popupPostEditText)
+
+        createPostButton.setOnClickListener {
+            dimBackgroundView.visibility = View.VISIBLE
+            createPostPopup.visibility = View.VISIBLE
+        }
+
+        closePopupButton.setOnClickListener {
+            dimBackgroundView.visibility = View.GONE
+            createPostPopup.visibility = View.GONE
+
+            createPostTextView.text.clear()
+
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
+        }
+    }
+    private fun showReportPopup() {
+        val reportPopup = findViewById<RelativeLayout>(R.id.createReportPopup)
+        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
+        val closeButton = findViewById<ImageView>(R.id.closeReportPopupButton)
+
+        reportPopup.visibility = View.VISIBLE
+        dimBackgroundView.visibility = View.VISIBLE
+
+        closeButton.setOnClickListener {
+            reportPopup.visibility = View.GONE
+            dimBackgroundView.visibility = View.GONE
+        }
+
+        dimBackgroundView.setOnClickListener {
+            reportPopup.visibility = View.GONE
+            dimBackgroundView.visibility = View.GONE
+        }
+    }
+    private fun fillPostsArray() {
+        val listView: ListView = findViewById(R.id.postsListView)
 
         val posts = ArrayList<Post>()
         posts.add(Post(R.drawable.smiley_circle, "User1", "12 Jan 2024", "This is an example post content. It can be any text that a user might post on social network app."))
@@ -103,12 +145,18 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
 
         val adapter = PostAdapter(this, posts)
         adapter.commentButtonClickListener = this
+        adapter.reportButtonClickListener = this
+
         listView.adapter = adapter
-
-
     }
-    override fun onCommentButtonClick(post: Post) {
-        val commentActivity = CommentActivity()
-        commentActivity.show(supportFragmentManager, "commentActivity")
+    private fun fillReportSpinner() {
+        val reportReasons = EReportReason.values().map { it.name.replace('_', ' ') }
+
+        val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, reportReasons)
+
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
+        reasonSpinner.adapter = spinnerAdapter
     }
 }

@@ -17,6 +17,11 @@ class UserReportsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_user_reports, container, false)
 
+        fillUserReportsArray(view)
+
+        return view
+    }
+    private fun fillUserReportsArray(view: View) {
         val userReportsListView = view.findViewById<ListView>(R.id.userReportsListView)
 
         val reports = ArrayList<Report>()
@@ -38,7 +43,5 @@ class UserReportsFragment : Fragment() {
 
         userReportsListView.adapter = adapter
 
-        return view
     }
-
 }

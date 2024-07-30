@@ -17,6 +17,11 @@ class PostReportsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_post_reports, container, false)
 
+        fillPostReportsArray(view)
+
+        return view
+    }
+    private fun fillPostReportsArray(view: View) {
         val postReportsListView = view.findViewById<ListView>(R.id.postReportsListView)
 
         val reports = ArrayList<Report>()
@@ -38,8 +43,6 @@ class PostReportsFragment : Fragment() {
             getString(R.string.delete_request))
 
         postReportsListView.adapter = adapter
-
-        return view
     }
 
 }

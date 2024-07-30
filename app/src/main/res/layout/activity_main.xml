@@ -107,4 +107,10 @@
         layout="@layout/create_post_popup"
         />
 
+    <include
+        android:id="@+id/createReportPopupInclude"
+        layout="@layout/create_report_popup"
+        />
+
+
 </RelativeLayout>

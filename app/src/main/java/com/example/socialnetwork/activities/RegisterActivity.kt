@@ -14,9 +14,12 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        val createPostButton = findViewById<TextView>(R.id.loginRedirectText)
+        redirectToLogin()
+    }
+    private fun redirectToLogin() {
+        val redirectButton = findViewById<TextView>(R.id.loginRedirectText)
 
-        createPostButton.setOnClickListener {
+        redirectButton.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }

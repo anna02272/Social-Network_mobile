@@ -7,11 +7,13 @@ import com.example.socialnetwork.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class SearchActivity: AppCompatActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
 
+        setupBottomNavigation()
+    }
+    private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
         bottomNavigationView.selectedItemId = R.id.bottom_search
 

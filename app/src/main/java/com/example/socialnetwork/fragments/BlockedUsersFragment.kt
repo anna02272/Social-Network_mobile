@@ -19,6 +19,11 @@ class BlockedUsersFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_blocked_users, container, false)
 
+        fillBlockedUsersArray(view)
+
+        return view
+    }
+    private fun fillBlockedUsersArray(view: View) {
         val blockedUsersListView = view.findViewById<ListView>(R.id.blockedUsersListView)
 
         val reports = ArrayList<Report>()
@@ -38,8 +43,5 @@ class BlockedUsersFragment : Fragment() {
             null)
 
         blockedUsersListView.adapter = adapter
-
-        return view
     }
-
 }
