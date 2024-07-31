@@ -3,7 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="yellow">#FEE440</color>
-    <color name="light_yelllow">#E5E483</color>
+    <color name="light_yellow">#E5E483</color>
     <color name="dark_yellow">#FDA403</color>
     <color name="buttonTextColorLight">@android:color/black</color>
     <color name="buttonTextColorDark">@android:color/white</color>
@@ -12,4 +12,5 @@
     <color name="grey">#747264</color>
     <color name="light_grey">#E9ECEF</color>
     <color name="vector_fill">#FFFFFF</color>
+    <color name="dark_grey">#201E1E</color>
 </resources>

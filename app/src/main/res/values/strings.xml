@@ -100,4 +100,7 @@
     <string name="friends">Friends:</string>
     <string name="groups_profile">Groups:</string>
 
+    <!-- Search -->
+    <string name="add_friend">Add friend</string>
+
 </resources>

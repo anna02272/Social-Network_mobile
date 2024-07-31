@@ -2,4 +2,5 @@
 <resources>
     <color name="vector_fill">#201E1E</color>
     <color name="light_grey">#747264</color>
+    <color name="dark_grey">#201E1E</color>
 </resources>

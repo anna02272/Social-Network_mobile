@@ -7,23 +7,59 @@
     android:layout_height="match_parent"
     tools:context=".activities.SearchActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/searchBox"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Search"
-        android:textColor="@color/yellow"
-        android:layout_centerInParent="true"
-        android:textSize="36sp" />
+        android:layout_alignParentTop="true"
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:layout_marginTop="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="8dp"
+            android:background="@drawable/popup_border"
+            android:elevation="2dp">
+
+            <EditText
+                android:id="@+id/searchEditText"
+                android:layout_width="187dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_grey_background"
+                android:drawableLeft="@drawable/search_grey"
+                android:drawablePadding="8dp"
+                android:hint="@string/search"
+                android:padding="10dp"
+                android:layout_margin="5dp"
+                />
+
+    </LinearLayout>
+
+    </LinearLayout>
+
+    <android.widget.ListView
+        android:id="@+id/searchListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/searchBox"
+        android:background="@drawable/popup_border"
+        android:elevation="2dp"
+        android:layout_above="@id/bottomNavigation"
+        android:layout_margin="8dp"
+        />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_marginEnd="20dp"
+        android:layout_marginStart="20dp"
         android:layout_marginBottom="30dp"
-        android:layout_marginEnd="30dp"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="30dp"
         android:background="@drawable/bottom_background"
         android:elevation="2dp"
         app:itemIconSize="30dp"

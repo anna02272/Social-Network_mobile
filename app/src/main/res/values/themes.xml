@@ -8,7 +8,7 @@
         <item name="colorSecondaryVariant">@color/yellow</item>
         <item name="colorOnSecondary">@color/white</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/light_yelllow</item>
+        <item name="android:statusBarColor">@color/light_yellow</item>
         <!-- Customize your theme here. -->
         <item name="android:textColor">@android:color/black</item>
 
