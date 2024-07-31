@@ -1,4 +1,4 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
 class Group(
     private val name: String,

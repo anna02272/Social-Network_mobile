@@ -32,7 +32,7 @@ class NotificationsActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.bottom_home -> {
-                    startActivity(Intent(applicationContext, MainActivity::class.java))
+                    startActivity(Intent(applicationContext, PostsActivity::class.java))
                     overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left

@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.GroupAdapter
 import com.example.socialnetwork.fragments.ConfirmationDialogFragment
-import com.example.socialnetwork.model.Group
+import com.example.socialnetwork.model.entity.Group
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class GroupsActivity : AppCompatActivity(),
@@ -47,7 +47,7 @@ class GroupsActivity : AppCompatActivity(),
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.bottom_home -> {
-                    startActivity(Intent(applicationContext, MainActivity::class.java))
+                    startActivity(Intent(applicationContext, PostsActivity::class.java))
                     overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left

@@ -1,4 +1,4 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
 enum class EReportReason {
         BREAKES_RULES,

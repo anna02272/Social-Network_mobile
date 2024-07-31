@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.FriendRequestAdapter
-import com.example.socialnetwork.model.FriendRequest
+import com.example.socialnetwork.model.entity.FriendRequest
 
 class FriendRequestsFragment : Fragment(),
     FriendRequestAdapter.DeleteButtonClickListener,

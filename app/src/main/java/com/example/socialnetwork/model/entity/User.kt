@@ -1,6 +1,9 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
-import android.media.Image
+import com.example.socialnetwork.model.entity.Comment
+import com.example.socialnetwork.model.entity.FriendRequest
+import com.example.socialnetwork.model.entity.Post
+import com.example.socialnetwork.model.entity.Report
 import java.time.LocalDateTime
 
 data class User(

@@ -20,23 +20,33 @@ import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.fragments.ConfirmationDialogFragment
-import com.example.socialnetwork.model.EReportReason
-import com.example.socialnetwork.model.Post
+import com.example.socialnetwork.model.entity.EReportReason
+import com.example.socialnetwork.model.entity.Post
+import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainActivity : AppCompatActivity(),
+class PostsActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
     PostAdapter.ReportButtonClickListener,
     PostAdapter.DeleteButtonClickListener,
     ConfirmationDialogFragment.ConfirmationDialogListener  {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_posts)
+
+        val token = PreferencesManager.getToken(this)
+        if (token == null) {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
 
         setupBottomNavigation()
 
@@ -44,7 +54,11 @@ class MainActivity : AppCompatActivity(),
 
         fillReportSpinner()
 
-        fetchPostsFromServer()
+        fetchPostsFromServer(token)
+
+        findViewById<Button>(R.id.sort).setOnClickListener {
+            performLogout()
+        }
 
     }
     override fun onCommentButtonClick(post: Post) {
@@ -170,9 +184,8 @@ class MainActivity : AppCompatActivity(),
         dialog.listener = this
         dialog.show(supportFragmentManager, "ConfirmationDialog")
     }
-
-    private fun fetchPostsFromServer() {
-        val postService = ClientUtils.postService
+    private fun fetchPostsFromServer(token: String) {
+        val postService = ClientUtils.getPostService(token)
         val call = postService.getAll()
 
         call.enqueue(object : Callback<ArrayList<Post>> {
@@ -190,7 +203,6 @@ class MainActivity : AppCompatActivity(),
 
             override fun onFailure(call: Call<ArrayList<Post>>, t: Throwable) {
                 showToast("Error: ${t.message}")
-                Log.d("Greska", "${t.message}")
             }
         })
     }
@@ -206,5 +218,27 @@ class MainActivity : AppCompatActivity(),
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    private fun performLogout() {
+        val userService = ClientUtils.userService
+        val call = userService.logout()
+
+        call.enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                if (response.isSuccessful) {
+                    PreferencesManager.clearToken(this@PostsActivity)
+                    val intent = Intent(this@PostsActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    showToast("Logout failed: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<String>, t: Throwable) {
+                showToast("Logout error: ${t.message}")
+
+            }
+        })
     }
 }

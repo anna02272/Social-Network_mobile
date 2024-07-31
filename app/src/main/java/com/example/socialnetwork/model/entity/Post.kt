@@ -1,4 +1,4 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
 import android.media.Image
 import java.time.LocalDateTime

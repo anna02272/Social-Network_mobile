@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.CommentAdapter
-import com.example.socialnetwork.model.Comment
+import com.example.socialnetwork.model.entity.Comment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class CommentActivity : BottomSheetDialogFragment() {

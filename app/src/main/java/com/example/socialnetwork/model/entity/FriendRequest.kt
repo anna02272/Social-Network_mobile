@@ -1,4 +1,4 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
 class FriendRequest(
     private val fromUser: String,

@@ -11,7 +11,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.R
-import com.example.socialnetwork.model.Comment
+import com.example.socialnetwork.model.entity.Comment
 
 class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
     ArrayAdapter<Comment>(context, R.layout.fragment_comment, comments) {

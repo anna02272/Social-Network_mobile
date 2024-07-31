@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.model.User
+import com.example.socialnetwork.model.entity.User
 
 class SearchAdapter(context: Context, users: ArrayList<User>) :
     ArrayAdapter<User>(context, R.layout.fragment_search, users) {

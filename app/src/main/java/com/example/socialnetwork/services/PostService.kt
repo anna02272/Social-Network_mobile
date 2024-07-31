@@ -1,6 +1,6 @@
 package com.example.socialnetwork.services
 
-import com.example.socialnetwork.model.Post
+import com.example.socialnetwork.model.entity.Post
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body

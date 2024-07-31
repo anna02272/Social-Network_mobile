@@ -1,4 +1,4 @@
-package com.example.socialnetwork.model
+package com.example.socialnetwork.model.entity
 
 class Report(
     private val fromUser: String,

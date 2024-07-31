@@ -10,7 +10,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.R
-import com.example.socialnetwork.model.Group
+import com.example.socialnetwork.model.entity.Group
 
 class GroupAdapter(context: Context, groups: ArrayList<Group>) :
     ArrayAdapter<Group>(context, R.layout.fragment_group, groups) {

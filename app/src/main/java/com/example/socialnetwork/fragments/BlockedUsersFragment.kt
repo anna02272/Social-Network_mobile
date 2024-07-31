@@ -9,7 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.ReportAdapter
-import com.example.socialnetwork.model.Report
+import com.example.socialnetwork.model.entity.Report
 
 class BlockedUsersFragment : Fragment(),
     ReportAdapter.AcceptButtonClickListener,

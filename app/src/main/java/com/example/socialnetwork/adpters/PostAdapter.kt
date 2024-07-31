@@ -6,16 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
-import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import com.example.socialnetwork.activities.CommentActivity
-import com.example.socialnetwork.model.EReportReason
-import com.example.socialnetwork.model.Post
+import com.example.socialnetwork.model.entity.Post
 import java.time.format.DateTimeFormatter
 
 class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
