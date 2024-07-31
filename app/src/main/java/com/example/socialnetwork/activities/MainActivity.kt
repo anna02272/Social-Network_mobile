@@ -3,7 +3,6 @@ package com.example.socialnetwork.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -13,15 +12,21 @@ import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.PostAdapter
+import com.example.socialnetwork.fragments.ConfirmationDialogFragment
 import com.example.socialnetwork.model.EReportReason
 import com.example.socialnetwork.model.Post
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener, PostAdapter.ReportButtonClickListener  {
+class MainActivity : AppCompatActivity(),
+    PostAdapter.CommentButtonClickListener,
+    PostAdapter.ReportButtonClickListener,
+    PostAdapter.DeleteButtonClickListener,
+    ConfirmationDialogFragment.ConfirmationDialogListener  {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -43,6 +48,18 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
     }
     override fun onReportButtonClick(post: Post) {
         showReportPopup()
+    }
+
+    override fun onDeleteButtonClick() {
+        showConfirmationDialog()
+    }
+
+    override fun onDialogPositiveClick() {
+        Toast.makeText(this, "Post deleted", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDialogNegativeClick() {
+        Toast.makeText(this, "Delete canceled", Toast.LENGTH_SHORT).show()
     }
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -146,6 +163,7 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
         val adapter = PostAdapter(this, posts)
         adapter.commentButtonClickListener = this
         adapter.reportButtonClickListener = this
+        adapter.deleteButtonClickListener = this
 
         listView.adapter = adapter
     }
@@ -159,4 +177,11 @@ class MainActivity : AppCompatActivity(), PostAdapter.CommentButtonClickListener
         val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
         reasonSpinner.adapter = spinnerAdapter
     }
+    private fun showConfirmationDialog() {
+        val dialog = ConfirmationDialogFragment()
+        dialog.setMessage(getString(R.string.confirm_delete_post))
+        dialog.listener = this
+        dialog.show(supportFragmentManager, "ConfirmationDialog")
+    }
+
 }

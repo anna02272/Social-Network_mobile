@@ -15,6 +15,11 @@ import com.example.socialnetwork.model.Group
 class GroupAdapter(context: Context, groups: ArrayList<Group>) :
     ArrayAdapter<Group>(context, R.layout.fragment_group, groups) {
 
+    interface DeleteButtonClickListener {
+        fun onDeleteButtonClick()
+    }
+
+    var deleteButtonClickListener: GroupAdapter.DeleteButtonClickListener? = null
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
         val group: Group? = getItem(position)
@@ -57,7 +62,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
                     true
                 }
                 R.id.delete -> {
-                    Toast.makeText(context, "Suspend Group clicked", Toast.LENGTH_SHORT).show()
+                    deleteButtonClickListener?.onDeleteButtonClick()
                     true
                 }
                 else -> false

@@ -32,8 +32,13 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         fun onReportButtonClick(post: Post)
     }
 
+    interface DeleteButtonClickListener {
+        fun onDeleteButtonClick()
+    }
+
     var commentButtonClickListener: CommentButtonClickListener? = null
     var reportButtonClickListener: ReportButtonClickListener? = null
+    var deleteButtonClickListener: DeleteButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
@@ -88,7 +93,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                     true
                 }
                 R.id.delete -> {
-                    Toast.makeText(mContext, "Delete Post clicked", Toast.LENGTH_SHORT).show()
+                    deleteButtonClickListener?.onDeleteButtonClick()
                     true
                 }
                 R.id.report -> {

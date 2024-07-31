@@ -26,9 +26,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.PostActivity"
-            android:exported="false" />
-        <activity
             android:name=".activities.ProfileActivity"
             android:exported="false" />
         <activity

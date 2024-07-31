@@ -5,12 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.ReportAdapter
 import com.example.socialnetwork.model.Report
 
-class PostReportsFragment : Fragment() {
+class PostReportsFragment : Fragment(),
+    ReportAdapter.DeleteButtonClickListener,
+    ConfirmationDialogFragment.ConfirmationDialogListener {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,7 +45,25 @@ class PostReportsFragment : Fragment() {
             getString(R.string.accept),
             getString(R.string.delete_request))
 
+        adapter.deleteButtonClickListener = this
+
         postReportsListView.adapter = adapter
     }
 
+    override fun onDeleteButtonClick() {
+        showConfirmationDialog()
+    }
+    override fun onDialogPositiveClick() {
+        Toast.makeText(requireContext(),  "Request is deleted", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDialogNegativeClick() {
+        Toast.makeText(requireContext(), "Delete canceled", Toast.LENGTH_SHORT).show()
+    }
+    private fun showConfirmationDialog() {
+        val dialog = ConfirmationDialogFragment()
+        dialog.setMessage(getString(R.string.confirm_delete_post_report))
+        dialog.listener = this
+        dialog.show(parentFragmentManager, "ConfirmationDialog")
+    }
 }

@@ -1,7 +1,6 @@
 package com.example.socialnetwork.activities
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -11,15 +10,17 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
-import androidx.core.content.ContentProviderCompat.requireContext
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.CommentAdapter
 import com.example.socialnetwork.adpters.GroupAdapter
-import com.example.socialnetwork.model.Comment
+import com.example.socialnetwork.fragments.ConfirmationDialogFragment
 import com.example.socialnetwork.model.Group
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class GroupsActivity : AppCompatActivity() {
+class GroupsActivity : AppCompatActivity(),
+    GroupAdapter.DeleteButtonClickListener,
+    ConfirmationDialogFragment.ConfirmationDialogListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_groups)
@@ -29,6 +30,15 @@ class GroupsActivity : AppCompatActivity() {
         showGroupPopup()
 
         fillGroupArray()
+    }
+    override fun onDeleteButtonClick() {
+        showConfirmationDialog()
+    }
+    override fun onDialogPositiveClick() {
+        Toast.makeText(this, "Group suspended", Toast.LENGTH_SHORT).show()
+    }
+    override fun onDialogNegativeClick() {
+        Toast.makeText(this, "Suspend canceled", Toast.LENGTH_SHORT).show()
     }
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -113,7 +123,17 @@ class GroupsActivity : AppCompatActivity() {
         groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
 
         val adapter = GroupAdapter(this, groups)
+        adapter.deleteButtonClickListener = this
 
         groupsListView.adapter = adapter
     }
+
+    private fun showConfirmationDialog() {
+        val dialog = ConfirmationDialogFragment()
+        dialog.setMessage(getString(R.string.confirm_delete_group))
+        dialog.listener = this
+        dialog.show(supportFragmentManager, "ConfirmationDialog")
+    }
 }
+
+

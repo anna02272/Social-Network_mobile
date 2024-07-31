@@ -19,6 +19,16 @@ class ReportAdapter(
     private val deleteButtonText: String? = null) :
     ArrayAdapter<Report>(context, R.layout.fragment_report, reports) {
 
+    interface AcceptButtonClickListener {
+        fun onAcceptButtonClick()
+    }
+    interface DeleteButtonClickListener {
+        fun onDeleteButtonClick()
+    }
+
+    var acceptButtonClickListener: ReportAdapter.AcceptButtonClickListener? = null
+    var deleteButtonClickListener: ReportAdapter.DeleteButtonClickListener? = null
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
         val report: Report? = getItem(position)
@@ -70,6 +80,14 @@ class ReportAdapter(
             } else {
                 deleteButton.text = deleteButtonText
             }
+        }
+
+        acceptButton.setOnClickListener {
+            acceptButtonClickListener?.onAcceptButtonClick()
+        }
+
+        deleteButton.setOnClickListener {
+            deleteButtonClickListener?.onDeleteButtonClick()
         }
 
         return view
