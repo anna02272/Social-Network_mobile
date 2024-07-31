@@ -24,8 +24,8 @@ class SearchAdapter(context: Context, users: ArrayList<User>) :
         val lastNameTextView = view!!.findViewById<TextView>(R.id.lastNameTextView)
 
         user?.let {
-            firstNameTextView.text = it.getFirstName()
-            lastNameTextView.text = it.getLastName()
+            firstNameTextView.text = it.firstName
+            lastNameTextView.text = it.lastName
         }
 
         return view

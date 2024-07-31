@@ -16,6 +16,7 @@ import android.widget.Toast
 import com.example.socialnetwork.activities.CommentActivity
 import com.example.socialnetwork.model.EReportReason
 import com.example.socialnetwork.model.Post
+import java.time.format.DateTimeFormatter
 
 class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     ArrayAdapter<Post?>(mContext, 0, posts as List<Post?>) {
@@ -56,11 +57,12 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         val commentButton = view.findViewById<ImageButton>(R.id.commentButton)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
-        post?.let {
-            profileImage.setImageResource(it.getProfileImageResource())
-            usernameTextView.text = it.getUsername()
-            dateTextView.text = it.getDate()
-            contentTextView.text = it.getContent()
+        post?.let { it ->
+//            profileImage.setImageResource(it.user.image)
+            usernameTextView.text = it.user?.profileName?.takeIf { it.isNotEmpty() } ?: it.user?.username
+            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+            dateTextView.text = it.creationDate.format(formatter)
+            contentTextView.text = it.content
         }
 
         commentButton.setOnClickListener {

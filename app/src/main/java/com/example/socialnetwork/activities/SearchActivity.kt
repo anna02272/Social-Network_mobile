@@ -70,11 +70,11 @@ class SearchActivity: AppCompatActivity() {
         val listView: ListView = findViewById(R.id.searchListView)
 
         val users = ArrayList<User>()
-        users.add(User("User1", "User1" ))
-        users.add(User("User2", "User2"))
-        users.add(User("User3", "User3"))
-        users.add(User("User4", "User4"))
-        users.add(User("User5", "User5"))
+//        users.add(User("User1", "User1" ))
+//        users.add(User("User2", "User2"))
+//        users.add(User("User3", "User3"))
+//        users.add(User("User4", "User4"))
+//        users.add(User("User5", "User5"))
 
 
         val adapter = SearchAdapter(this, users)

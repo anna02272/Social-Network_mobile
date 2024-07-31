@@ -3,6 +3,7 @@ package com.example.socialnetwork.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -17,10 +18,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.PostAdapter
+import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.fragments.ConfirmationDialogFragment
 import com.example.socialnetwork.model.EReportReason
 import com.example.socialnetwork.model.Post
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class MainActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
@@ -37,9 +42,9 @@ class MainActivity : AppCompatActivity(),
 
         showPostPopup()
 
-        fillPostsArray()
-
         fillReportSpinner()
+
+        fetchPostsFromServer()
 
     }
     override fun onCommentButtonClick(post: Post) {
@@ -149,24 +154,6 @@ class MainActivity : AppCompatActivity(),
             dimBackgroundView.visibility = View.GONE
         }
     }
-    private fun fillPostsArray() {
-        val listView: ListView = findViewById(R.id.postsListView)
-
-        val posts = ArrayList<Post>()
-        posts.add(Post(R.drawable.smiley_circle, "User1", "12 Jan 2024", "This is an example post content. It can be any text that a user might post on social network app."))
-        posts.add(Post(R.drawable.smiley_circle, "User2", "13 Jan 2024", "Post content 2"))
-        posts.add(Post(R.drawable.smiley_circle, "User3", "12 Jan 2024", "Post content 3"))
-        posts.add(Post(R.drawable.smiley_circle, "User4", "13 Jan 2024", "Post content 4"))
-        posts.add(Post(R.drawable.smiley_circle, "User1", "12 Jan 2024", "Post content 5"))
-        posts.add(Post(R.drawable.smiley_circle, "User2", "13 Jan 2024", "Post content 6"))
-
-        val adapter = PostAdapter(this, posts)
-        adapter.commentButtonClickListener = this
-        adapter.reportButtonClickListener = this
-        adapter.deleteButtonClickListener = this
-
-        listView.adapter = adapter
-    }
     private fun fillReportSpinner() {
         val reportReasons = EReportReason.values().map { it.name.replace('_', ' ') }
 
@@ -184,4 +171,40 @@ class MainActivity : AppCompatActivity(),
         dialog.show(supportFragmentManager, "ConfirmationDialog")
     }
 
+    private fun fetchPostsFromServer() {
+        val postService = ClientUtils.postService
+        val call = postService.getAll()
+
+        call.enqueue(object : Callback<ArrayList<Post>> {
+            override fun onResponse(
+                call: Call<ArrayList<Post>>,
+                response: Response<ArrayList<Post>>
+            ) {
+                if (response.isSuccessful) {
+                    val posts = response.body() ?: arrayListOf()
+                    updateListView(posts)
+                } else {
+                    showToast("Failed to load posts")
+                }
+            }
+
+            override fun onFailure(call: Call<ArrayList<Post>>, t: Throwable) {
+                showToast("Error: ${t.message}")
+                Log.d("Greska", "${t.message}")
+            }
+        })
+    }
+
+    private fun updateListView(posts: ArrayList<Post>) {
+        val listView: ListView = findViewById(R.id.postsListView)
+        val adapter = PostAdapter(this, posts)
+        adapter.commentButtonClickListener = this
+        adapter.reportButtonClickListener = this
+        adapter.deleteButtonClickListener = this
+        listView.adapter = adapter
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
 }

@@ -1,24 +1,18 @@
 package com.example.socialnetwork.model
 
-class Post(
-    private val profileImageResource: Int,
-    private val username: String,
-    private val date: String,
-    private val content: String) {
+import android.media.Image
+import java.time.LocalDateTime
 
-    fun getProfileImageResource(): Int {
-        return profileImageResource
-    }
+data class Post(
+    val id: Long?,
+    val content: String,
+    val creationDate: LocalDateTime,
+    val isDeleted: Boolean,
+    val user: User?,
+    val images: List<Image> = emptyList(),
+//    val reactions: List<Reaction> = emptyList(),
+    val reports: List<Report> = emptyList(),
+    val comments: List<Comment> = emptyList(),
+//    val group: Group?
+)
 
-    fun getUsername(): String {
-        return username
-    }
-
-    fun getDate(): String {
-        return date
-    }
-
-    fun getContent(): String {
-        return content
-    }
-}
