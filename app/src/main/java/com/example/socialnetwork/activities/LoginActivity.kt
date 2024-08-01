@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.experimental.UseExperimental
 import androidx.core.content.ContextCompat
 import com.example.socialnetwork.R
 import com.example.socialnetwork.clients.ClientUtils
@@ -20,18 +19,21 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LoginActivity : AppCompatActivity() {
+
+    private lateinit var usernameEditText: EditText
+    private lateinit var passwordEditText: EditText
+    private lateinit var errorMessageTextView: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val token = PreferencesManager.getToken(this)
-        if (!token.isNullOrEmpty()) {
-            val intent = Intent(this, PostsActivity::class.java)
-            startActivity(intent)
-            finish()
-            return
-        }
+        checkToken()
 
         setContentView(R.layout.activity_login)
+
+        usernameEditText = findViewById(R.id.login_username)
+        passwordEditText = findViewById(R.id.login_password)
+        errorMessageTextView = findViewById(R.id.login_error_message)
 
         login()
         redirectToRegister()
@@ -44,17 +46,25 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
     }
-    private fun login(){
-        val loginButton = findViewById<Button>(R.id.login_button)
-        loginButton.setOnClickListener {
-            performLogin()
+    private fun checkToken() {
+        val token = PreferencesManager.getToken(this)
+        if (!token.isNullOrEmpty()) {
+            val intent = Intent(this, PostsActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
         }
     }
-    private fun performLogin() {
-        val usernameEditText = findViewById<EditText>(R.id.login_username)
-        val passwordEditText = findViewById<EditText>(R.id.login_password)
-        val errorMessageTextView = findViewById<TextView>(R.id.login_error_message)
+    private fun login() {
+        val loginButton = findViewById<Button>(R.id.login_button)
+        loginButton.setOnClickListener {
+            if (validateInputs()) {
+                performLogin()
+            }
+        }
+    }
 
+    private fun validateInputs(): Boolean {
         val username = usernameEditText.text.toString().trim()
         val password = passwordEditText.text.toString().trim()
 
@@ -62,19 +72,26 @@ class LoginActivity : AppCompatActivity() {
         passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
         errorMessageTextView.visibility = View.GONE
 
-        if (username.isEmpty()) {
-            usernameEditText.background = ContextCompat.getDrawable(this, R.drawable.border_red)
-            errorMessageTextView.text = "Username cannot be empty"
-            errorMessageTextView.visibility = View.VISIBLE
-            return
+        return when {
+            username.isEmpty() -> {
+                showValidationError(usernameEditText, "Username cannot be empty")
+                false
+            }
+            password.isEmpty() -> {
+                showValidationError(passwordEditText, "Password cannot be empty")
+                false
+            }
+            else -> true
         }
-
-        if (password.isEmpty()) {
-            passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border_red)
-            errorMessageTextView.text = "Password cannot be empty"
-            errorMessageTextView.visibility = View.VISIBLE
-            return
-        }
+    }
+    private fun showValidationError(editText: EditText, message: String) {
+        editText.background = ContextCompat.getDrawable(this, R.drawable.border_red)
+        errorMessageTextView.text = message
+        errorMessageTextView.visibility = View.VISIBLE
+    }
+    private fun performLogin() {
+        val username = usernameEditText.text.toString().trim()
+        val password = passwordEditText.text.toString().trim()
 
         val userService = ClientUtils.userService
         val loginRequest = JwtAuthenticationRequest(username, password)
@@ -108,10 +125,10 @@ class LoginActivity : AppCompatActivity() {
             }
         })
     }
+
     private fun handleError(response: Response<UserTokenState>) {
-        val errorMessageTextView = findViewById<TextView>(R.id.login_error_message)
         val errorBody = response.errorBody()?.string() ?: "Unknown error"
-        errorMessageTextView.text = "Login failed: ${errorBody}"
+        errorMessageTextView.text = "Login failed: $errorBody"
         errorMessageTextView.visibility = View.VISIBLE
     }
 }

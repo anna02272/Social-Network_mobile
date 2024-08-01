@@ -104,6 +104,16 @@
                 android:drawableLeft="@drawable/baseline_abc_24"
                 android:drawablePadding="8dp"/>
 
+            <TextView
+                android:id="@+id/login_error_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textColor="@android:color/holo_red_dark"
+                android:background="@drawable/white_border"
+                android:textSize="14sp"
+                android:visibility="gone"/>
+
             <Button
                 android:layout_width="350dp"
                 android:layout_height="70dp"
