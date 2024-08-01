@@ -1,7 +1,7 @@
 package com.example.socialnetwork.model.entity
 
 enum class EReportReason {
-        BREAKES_RULES,
+        BRAKES_RULES,
         HARASSMENT,
         HATE,
         SHARING_PERSONAL_INFORMATION,

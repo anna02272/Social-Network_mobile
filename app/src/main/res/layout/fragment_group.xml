@@ -11,7 +11,7 @@
         android:layout_width="50dp"
         android:layout_height="20dp"
         android:layout_gravity="center"
-        android:src="@drawable/baseline_more_horiz_18"
+        android:src="@drawable/more_options"
         android:background="@android:color/transparent"
         android:contentDescription="@string/more_options"/>
 

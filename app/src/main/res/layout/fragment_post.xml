@@ -61,7 +61,7 @@
             android:layout_width="50dp"
             android:layout_height="20dp"
             android:layout_marginStart="160dp"
-            android:src="@drawable/baseline_more_horiz_18"
+            android:src="@drawable/more_options"
             android:background="@android:color/transparent"
             android:contentDescription="@string/more_options"/>
     </LinearLayout>
@@ -86,7 +86,7 @@
             android:id="@+id/likeButtonCount"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/baseline_thumb_up_24_blue"
+            android:src="@drawable/thumb_up_blue"
             android:background="@android:color/transparent"
             android:contentDescription="@string/like_total"/>
 
@@ -103,7 +103,7 @@
             android:id="@+id/dislikeButtonCount"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/baseline_thumb_down_24_blue"
+            android:src="@drawable/thumb_down_blue"
             android:background="@android:color/transparent"
             android:contentDescription="@string/dislike_total"/>
 
@@ -120,7 +120,7 @@
             android:id="@+id/heartButtonCount"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/baseline_favorite_24_red"
+            android:src="@drawable/heart_red"
             android:background="@android:color/transparent"
             android:contentDescription="@string/heart_total"/>
 
@@ -152,7 +152,7 @@
             android:id="@+id/likeButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/baseline_thumb_up_24"
+            android:src="@drawable/thumb_up"
             android:background="@android:color/transparent"
             android:contentDescription="@string/like"/>
 
@@ -169,7 +169,7 @@
             android:id="@+id/dislikeButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/baseline_thumb_down_24"
+            android:src="@drawable/thumb_down"
             android:background="@android:color/transparent"
             android:contentDescription="@string/dislike"/>
 
@@ -186,7 +186,7 @@
             android:id="@+id/heartButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/baseline_favorite_24"
+            android:src="@drawable/heart"
             android:background="@android:color/transparent"
             android:contentDescription="@string/heart"/>
 
@@ -203,7 +203,7 @@
             android:id="@+id/commentButton"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@drawable/baseline_comment_24"
+            android:src="@drawable/comment"
             android:background="@android:color/transparent"
             android:contentDescription="@string/comment"/>
 

@@ -47,18 +47,18 @@ class ReportAdapter(
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         report?.let {
-            userTextView.text = it.getFromUser()
-            dateTextView.text = it.getCreatedAt()
+            userTextView.text = it.fromUser
+            dateTextView.text = it.createdAt
 
-            if (it.getContent().isNullOrEmpty()) {
+            if (it.content.isNullOrEmpty()) {
                 reportContentTextView.visibility = View.GONE
             } else {
-                reportContentTextView.text = it.getContent()
+                reportContentTextView.text = it.content
             }
-            if (it.getReason().isNullOrEmpty()) {
+            if (it.reason.isNullOrEmpty()) {
                 reasonContentTextView.visibility = View.GONE
             } else {
-                reasonContentTextView.text = it.getReason()
+                reasonContentTextView.text = it.reason
             }
             if (text.isNullOrEmpty()) {
                 reportTextView.visibility = View.GONE

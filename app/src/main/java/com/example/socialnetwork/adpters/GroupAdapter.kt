@@ -35,10 +35,10 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
         group?.let {
-            nameTextView.text = it.getName()
-            descriptionTextView.text = it.getDescription()
-            dateTextView.text = it.getCreationDate()
-            adminTextView.text = it.getGroupAdmin()
+            nameTextView.text = it.name
+            descriptionTextView.text = it.description
+            dateTextView.text = it.creationDate
+            adminTextView.text = it.groupAdmin
         }
 
         moreOptionsButton.setOnClickListener { view ->

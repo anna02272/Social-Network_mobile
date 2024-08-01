@@ -1,24 +1,8 @@
 package com.example.socialnetwork.model.entity
 
-class Group(
-    private val name: String,
-    private val description: String,
-    private val creationDate: String,
-    private val groupAdmin: String) {
-
-    fun getName(): String {
-        return name
-    }
-
-    fun getDescription(): String {
-        return description
-    }
-
-    fun getCreationDate(): String {
-        return creationDate
-    }
-
-    fun getGroupAdmin(): String {
-        return groupAdmin
-    }
-}
+data class Group (
+    val name: String,
+    val description: String,
+    val creationDate: String,
+    val groupAdmin: String
+)

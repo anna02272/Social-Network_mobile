@@ -35,7 +35,7 @@ class RegisterActivity : AppCompatActivity() {
         emailEditText = findViewById(R.id.register_email)
         firstNameEditText = findViewById(R.id.register_firstname)
         lastNameEditText = findViewById(R.id.register_lastname)
-        errorMessageTextView = findViewById(R.id.login_error_message)
+        errorMessageTextView = findViewById(R.id.register_error_message)
 
         register()
         redirectToLogin()
@@ -65,11 +65,11 @@ class RegisterActivity : AppCompatActivity() {
         val firstName = firstNameEditText.text.toString().trim()
         val lastName = lastNameEditText.text.toString().trim()
 
-        usernameEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
-        passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
-        emailEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
-        firstNameEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
-        lastNameEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
+        usernameEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
+        passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
+        emailEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
+        firstNameEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
+        lastNameEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
         errorMessageTextView.visibility = View.GONE
 
         return when {

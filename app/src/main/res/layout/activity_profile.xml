@@ -32,7 +32,7 @@
                     android:id="@+id/closeProfileEditButton"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/baseline_close_24" />
+                    android:src="@drawable/close" />
 
                 <ImageView
                     android:id="@+id/profileImageView"
@@ -103,7 +103,7 @@
                         android:backgroundTint="@color/yellow"
                         android:text="@string/choose_files"
                         android:layout_marginTop="10dp"
-                        android:drawableLeft="@drawable/baseline_add_to_photos_24"/>
+                        android:drawableLeft="@drawable/add_photos"/>
 
                     <TextView
                         android:id="@+id/fileNameTextView"
@@ -122,7 +122,7 @@
                     android:text="@string/change_photo"
                     android:backgroundTint="@color/yellow"
                     android:textColor="@color/vector_fill"
-                    android:drawableLeft="@drawable/baseline_camera_alt_24"
+                    android:drawableLeft="@drawable/camera"
                     android:drawablePadding="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"/>

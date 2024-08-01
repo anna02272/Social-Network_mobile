@@ -68,8 +68,8 @@ class LoginActivity : AppCompatActivity() {
         val username = usernameEditText.text.toString().trim()
         val password = passwordEditText.text.toString().trim()
 
-        usernameEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
-        passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border)
+        usernameEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
+        passwordEditText.background = ContextCompat.getDrawable(this, R.drawable.border_yellow)
         errorMessageTextView.visibility = View.GONE
 
         return when {

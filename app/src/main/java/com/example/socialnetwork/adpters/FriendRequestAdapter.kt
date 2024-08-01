@@ -31,8 +31,8 @@ class FriendRequestAdapter(context: Context, friendRequests: ArrayList<FriendReq
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         friendRequest?.let {
-            userTextView.text = it.getFromUser()
-            dateTextView.text = it.getCreatedAt()
+            userTextView.text = it.fromUser
+            dateTextView.text = it.createdAt
         }
 
         deleteButton.setOnClickListener {

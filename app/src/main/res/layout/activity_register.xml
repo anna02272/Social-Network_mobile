@@ -48,64 +48,64 @@
                 android:layout_width="350dp"
                 android:layout_height="60dp"
                 android:id="@+id/register_username"
-                android:background="@drawable/border"
+                android:background="@drawable/border_yellow"
                 android:layout_marginTop="30dp"
                 android:padding="8dp"
                 android:hint="@string/username"
                 android:textColorHint="@color/grey"
-                android:drawableLeft="@drawable/baseline_account_circle_24"
+                android:drawableLeft="@drawable/account"
                 android:drawablePadding="8dp"/>
 
             <EditText
                 android:layout_width="350dp"
                 android:layout_height="60dp"
                 android:id="@+id/register_password"
-                android:background="@drawable/border"
+                android:background="@drawable/border_yellow"
                 android:layout_marginTop="20dp"
                 android:padding="8dp"
                 android:hint="@string/password"
                 android:textColorHint="@color/grey"
                 android:inputType="textPassword"
-                android:drawableLeft="@drawable/baseline_lock_24"
+                android:drawableLeft="@drawable/lock"
                 android:drawablePadding="8dp"/>
 
             <EditText
                 android:layout_width="350dp"
                 android:layout_height="60dp"
                 android:id="@+id/register_email"
-                android:background="@drawable/border"
+                android:background="@drawable/border_yellow"
                 android:layout_marginTop="20dp"
                 android:padding="8dp"
                 android:hint="@string/email"
                 android:textColorHint="@color/grey"
-                android:drawableLeft="@drawable/baseline_email_24"
+                android:drawableLeft="@drawable/email"
                 android:drawablePadding="8dp"/>
             <EditText
                 android:layout_width="350dp"
                 android:layout_height="60dp"
                 android:id="@+id/register_firstname"
-                android:background="@drawable/border"
+                android:background="@drawable/border_yellow"
                 android:layout_marginTop="20dp"
                 android:padding="8dp"
                 android:hint="@string/firstname"
                 android:textColorHint="@color/grey"
-                android:drawableLeft="@drawable/baseline_man_24"
+                android:drawableLeft="@drawable/person"
                 android:drawablePadding="8dp"/>
 
             <EditText
                 android:layout_width="350dp"
                 android:layout_height="60dp"
                 android:id="@+id/register_lastname"
-                android:background="@drawable/border"
+                android:background="@drawable/border_yellow"
                 android:layout_marginTop="20dp"
                 android:padding="8dp"
                 android:hint="@string/lastname"
                 android:textColorHint="@color/grey"
-                android:drawableLeft="@drawable/baseline_abc_24"
+                android:drawableLeft="@drawable/abc"
                 android:drawablePadding="8dp"/>
 
             <TextView
-                android:id="@+id/login_error_message"
+                android:id="@+id/register_error_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
