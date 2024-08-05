@@ -1,7 +1,9 @@
 package com.example.socialnetwork.activities
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,6 +17,8 @@ import android.widget.RelativeLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -40,12 +44,15 @@ class PostsActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
     PostAdapter.ReportButtonClickListener,
     PostAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener  {
+    ConfirmationDialogFragment.ConfirmationDialogListener {
 
     private lateinit var createPostTextView: EditText
     private lateinit var dimBackgroundView: View
     private lateinit var createPostPopup: RelativeLayout
     private lateinit var errorMessageTextView: TextView
+    private lateinit var fileNameTextView: TextView
+    private lateinit var pickImagesLauncher: ActivityResultLauncher<Intent>
+    private lateinit var selectedImages: MutableList<Uri>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -69,15 +76,24 @@ class PostsActivity : AppCompatActivity(),
 
         fetchPostsFromServer(token)
 
+        initializeActivityResultLauncher()
+
         findViewById<Button>(R.id.sort).setOnClickListener {
             performLogout()
         }
 
+        findViewById<Button>(R.id.chooseFileButton).setOnClickListener {
+            chooseImages()
+        }
+
+        fileNameTextView = findViewById(R.id.fileNameTextView)
     }
+
     override fun onCommentButtonClick(post: Post) {
         val commentActivity = CommentActivity()
         commentActivity.show(supportFragmentManager, "commentActivity")
     }
+
     override fun onReportButtonClick(post: Post) {
         showReportPopup()
     }
@@ -93,6 +109,7 @@ class PostsActivity : AppCompatActivity(),
     override fun onDialogNegativeClick() {
         Toast.makeText(this, "Delete canceled", Toast.LENGTH_SHORT).show()
     }
+
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
@@ -103,44 +120,53 @@ class PostsActivity : AppCompatActivity(),
                 R.id.bottom_home -> true
                 R.id.bottom_search -> {
                     startActivity(Intent(applicationContext, SearchActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                    overrideActivityTransition(
+                        OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left
                     )
                     finish()
                     true
                 }
+
                 R.id.bottom_groups -> {
                     startActivity(Intent(applicationContext, GroupsActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                    overrideActivityTransition(
+                        OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left
                     )
                     finish()
                     true
                 }
+
                 R.id.bottom_notifications -> {
                     startActivity(Intent(applicationContext, NotificationsActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                    overrideActivityTransition(
+                        OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left
                     )
                     finish()
                     true
                 }
+
                 R.id.bottom_profile -> {
                     startActivity(Intent(applicationContext, ProfileActivity::class.java))
-                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN,
+                    overrideActivityTransition(
+                        OVERRIDE_TRANSITION_OPEN,
                         R.anim.slide_in_right,
                         R.anim.slide_out_left
                     )
                     finish()
                     true
                 }
+
                 else -> false
             }
         }
     }
+
     private fun showPostPopup() {
         val createPostButton = findViewById<Button>(R.id.createPostButton)
         createPostTextView = findViewById(R.id.popupPostEditText)
@@ -164,6 +190,7 @@ class PostsActivity : AppCompatActivity(),
             handleCreatePost()
         }
     }
+
     private fun dismissPostPopup() {
         dimBackgroundView.visibility = View.GONE
         createPostPopup.visibility = View.GONE
@@ -174,6 +201,7 @@ class PostsActivity : AppCompatActivity(),
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
     }
+
     private fun showReportPopup() {
         val reportPopup = findViewById<RelativeLayout>(R.id.createReportPopup)
         val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
@@ -192,6 +220,7 @@ class PostsActivity : AppCompatActivity(),
             dimBackgroundView.visibility = View.GONE
         }
     }
+
     private fun fillReportSpinner() {
         val reportReasons = EReportReason.values().map { it.name.replace('_', ' ') }
 
@@ -202,12 +231,14 @@ class PostsActivity : AppCompatActivity(),
         val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
         reasonSpinner.adapter = spinnerAdapter
     }
+
     private fun showConfirmationDialog() {
         val dialog = ConfirmationDialogFragment()
         dialog.setMessage(getString(R.string.confirm_delete_post))
         dialog.listener = this
         dialog.show(supportFragmentManager, "ConfirmationDialog")
     }
+
     private fun fetchPostsFromServer(token: String) {
         val postService = ClientUtils.getPostService(token)
         val call = postService.getAll()
@@ -224,6 +255,7 @@ class PostsActivity : AppCompatActivity(),
                     handleTokenExpired()
                 } else {
                     showToast("Failed to load posts")
+
                 }
             }
 
@@ -232,12 +264,14 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
+
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(this)
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()
     }
+
     private fun updateListView(posts: ArrayList<Post>) {
         val listView: ListView = findViewById(R.id.postsListView)
         val adapter = PostAdapter(this, posts)
@@ -258,7 +292,7 @@ class PostsActivity : AppCompatActivity(),
 
         val contentPart = postContent.toRequestBody("text/plain".toMediaTypeOrNull())
 
-        val imageFiles = listOf<File>()
+        val imageFiles = getFilesFromUris(selectedImages)
         val images = prepareImages(imageFiles)
 
         val postService = ClientUtils.getPostService(token)
@@ -280,15 +314,10 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
-    private fun prepareImages(files: List<File>): List<MultipartBody.Part> {
-        return files.map { file ->
-            val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-            MultipartBody.Part.createFormData("images", file.name, requestFile)
-        }
-    }
 
     private fun showValidationError(message: String) {
-        createPostTextView.background = ContextCompat.getDrawable(this, R.drawable.border_red_square)
+        createPostTextView.background =
+            ContextCompat.getDrawable(this, R.drawable.border_red_square)
         errorMessageTextView.text = message
         errorMessageTextView.visibility = View.VISIBLE
     }
@@ -296,6 +325,7 @@ class PostsActivity : AppCompatActivity(),
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+
     private fun performLogout() {
         val userService = ClientUtils.userService
         val call = userService.logout()
@@ -317,5 +347,60 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
+
+    private fun prepareImages(files: List<File>): List<MultipartBody.Part> {
+        return files.map { file ->
+            val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("images", file.name, requestFile)
+        }
+    }
+
+    private fun chooseImages() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "image/*"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        pickImagesLauncher.launch(Intent.createChooser(intent, "Select Pictures"))
+    }
+
+    private fun initializeActivityResultLauncher() {
+        pickImagesLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                selectedImages = mutableListOf()
+
+                if (data?.clipData != null) {
+                    val count = data.clipData!!.itemCount
+                    for (i in 0 until count) {
+                        val imageUri = data.clipData!!.getItemAt(i).uri
+                        selectedImages.add(imageUri)
+                    }
+                } else if (data?.data != null) {
+                    selectedImages.add(data.data!!)
+                }
+
+                fileNameTextView.text = if (selectedImages.isEmpty()) {
+                    getString(R.string.no_file_chosen)
+                } else {
+                    resources.getQuantityString(R.plurals.files_chosen_count, selectedImages.size, selectedImages.size)
+                }
+            }
+        }
+    }
+    private fun getFilesFromUris(uris: List<Uri>): List<File> {
+        val files = mutableListOf<File>()
+        uris.forEach { uri ->
+            val fileName = uri.lastPathSegment ?: "temp_image"
+            val file = File(cacheDir, fileName)
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                file.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+            files.add(file)
+        }
+        return files
+    }
+
 
 }

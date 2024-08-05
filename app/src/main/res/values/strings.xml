@@ -32,6 +32,10 @@
     <string name="write_post">Write a post</string>
     <string name="choose_files">Choose files</string>
     <string name="no_file_chosen">No file chosen</string>
+    <plurals name="files_chosen_count">
+        <item quantity="one">%d file chosen</item>
+        <item quantity="other">%d files chosen</item>
+    </plurals>
     <string name="sort">ascending</string>
     <string name="what_s_on_your_mind">What\'s on your mind?</string>
     <string name="edit_post">Edit Post</string>
