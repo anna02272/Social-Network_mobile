@@ -81,6 +81,11 @@
         layout="@layout/create_group_popup"
         />
 
+    <include
+        android:id="@+id/suspendGroupPopupInclude"
+        layout="@layout/suspend_group_popup"
+        />
+
 
 
 </RelativeLayout>

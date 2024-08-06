@@ -7,7 +7,7 @@
     android:padding="10dp">
 
     <RelativeLayout
-        android:id="@+id/createGroupPopup"
+        android:id="@+id/suspendGroupPopup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -18,7 +18,7 @@
         android:visibility="gone">
 
         <ImageView
-            android:id="@+id/closeGroupPopupButton"
+            android:id="@+id/closeSuspendGroupPopupButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
@@ -31,12 +31,12 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/createGroupTextView"
+                android:id="@+id/suspendGroupTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:paddingBottom="10dp"
-                android:text="@string/create_group"
+                android:text="@string/suspend_group"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -52,50 +52,25 @@
                 android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/nameTextView"
+                    android:id="@+id/reasonTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/group_name"
+                    android:text="@string/reason_for_suspending"
                     android:textSize="17sp"
                     android:padding="10dp"
                     android:layout_gravity="start"/>
 
                 <EditText
-                    android:id="@+id/popupNameEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="@drawable/edit_text_border"
-                    android:hint="@string/write_name_of_group"
-                    android:padding="10dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:id="@+id/descriptionTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/group_description"
-                    android:textSize="17sp"
-                    android:padding="10dp"
-                    android:layout_gravity="start"/>
-
-                <EditText
-                    android:id="@+id/popupDescriptionEditText"
+                    android:id="@+id/popupReasonEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_text_border"
-                    android:hint="@string/write_group_description"
+                    android:hint="@string/write_suspending_reason"
                     android:padding="10dp" />
             </LinearLayout>
 
             <TextView
-                android:id="@+id/group_error_message"
+                android:id="@+id/suspend_error_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
@@ -111,11 +86,11 @@
                 android:layout_marginTop="10dp"/>
 
             <Button
-                android:id="@+id/popupCreateGroupButton"
+                android:id="@+id/popupSuspendGroupButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/yellow"
-                android:text="@string/create_group"
+                android:text="@string/suspend"
                 android:layout_margin="10dp"/>
         </LinearLayout>
     </RelativeLayout>

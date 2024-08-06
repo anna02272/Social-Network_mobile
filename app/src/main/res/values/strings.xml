@@ -70,6 +70,9 @@
     <string name="write_group_description">Write group description</string>
     <string name="edit_group">Edit Group</string>
     <string name="suspend_group">Suspend Group</string>
+    <string name="reason_for_suspending">Reason for suspending the group:</string>
+    <string name="write_suspending_reason">Reason for suspending</string>
+    <string name="suspend">Suspend</string>
 
     <!-- Reports-->
     <string name="friend_request">Friend Requests</string>

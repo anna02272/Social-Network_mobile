@@ -10,35 +10,78 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.GroupAdapter
-import com.example.socialnetwork.fragments.ConfirmationDialogFragment
+import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.CreateGroupRequest
 import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class GroupsActivity : AppCompatActivity(),
-    GroupAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener {
+    GroupAdapter.DeleteButtonClickListener {
+
+    private lateinit var dimBackgroundView: View
+    private lateinit var createGroupPopup: RelativeLayout
+    private lateinit var suspendGroupPopup: RelativeLayout
+    private lateinit var popupNameEditText: EditText
+    private lateinit var popupDescriptionEditText: EditText
+    private lateinit var popupReasonEditText: EditText
+    private lateinit var closeGroupPopupButton: ImageView
+    private lateinit var createGroupButton: Button
+    private lateinit var closeSuspendGroupPopupButton: ImageView
+    private lateinit var popupSuspendGroupButton: Button
+    private lateinit var groupErrorMessage: TextView
+    private lateinit var suspendErrorMessage: TextView
+    private var groupIdToSuspend: Long? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_groups)
 
+        val token = PreferencesManager.getToken(this)
+        if (token == null) {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+            return
+        }
+
         setupBottomNavigation()
 
-        showGroupPopup()
+        initializeViews()
 
-        fillGroupArray()
+        fetchGroupsFromServer(token)
     }
-    override fun onDeleteButtonClick() {
-        showConfirmationDialog()
-    }
-    override fun onDialogPositiveClick() {
-        Toast.makeText(this, "Group suspended", Toast.LENGTH_SHORT).show()
-    }
-    override fun onDialogNegativeClick() {
-        Toast.makeText(this, "Suspend canceled", Toast.LENGTH_SHORT).show()
+    private fun initializeViews() {
+        dimBackgroundView = findViewById(R.id.dimBackgroundView)
+        createGroupPopup = findViewById(R.id.createGroupPopup)
+        suspendGroupPopup = findViewById(R.id.suspendGroupPopup)
+        popupNameEditText = findViewById(R.id.popupNameEditText)
+        popupDescriptionEditText = findViewById(R.id.popupDescriptionEditText)
+        popupReasonEditText = findViewById(R.id.popupReasonEditText)
+        closeGroupPopupButton = findViewById(R.id.closeGroupPopupButton)
+        createGroupButton = findViewById(R.id.createGroupButton)
+        closeSuspendGroupPopupButton = findViewById(R.id.closeSuspendGroupPopupButton)
+        popupSuspendGroupButton = findViewById(R.id.popupSuspendGroupButton)
+        groupErrorMessage = findViewById(R.id.group_error_message)
+        suspendErrorMessage =  findViewById(R.id.suspend_error_message)
+
+        createGroupButton.setOnClickListener { showGroupPopup() }
+        closeGroupPopupButton.setOnClickListener { hideGroupPopup() }
+
+        closeSuspendGroupPopupButton.setOnClickListener { hideSuspendPopup() }
+        popupSuspendGroupButton.setOnClickListener { groupIdToSuspend?.let {
+            suspendGroup(it)
+        } }
     }
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -87,52 +130,187 @@ class GroupsActivity : AppCompatActivity(),
             }
         }
     }
-    private fun showGroupPopup() {
-        val createGroupButton = findViewById<Button>(R.id.createGroupButton)
-        val createGroupPopup = findViewById<RelativeLayout>(R.id.createGroupPopup)
-        val closePopupButton = findViewById<ImageView>(R.id.closeGroupPopupButton)
-        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
-        val popupNameEditText = findViewById<EditText>(R.id.popupNameEditText)
-        val popupDescriptionEditText = findViewById<EditText>(R.id.popupDescriptionEditText)
+    private fun fetchGroupsFromServer(token: String) {
+        val groupService = ClientUtils.getGroupService(token)
+        val call = groupService.getAll()
 
-        createGroupButton.setOnClickListener {
-            dimBackgroundView.visibility = View.VISIBLE
-            createGroupPopup.visibility = View.VISIBLE
-        }
+        call.enqueue(object : Callback<ArrayList<Group>> {
+            override fun onResponse(
+                call: Call<ArrayList<Group>>,
+                response: Response<ArrayList<Group>>
+            ) {
+                if (response.isSuccessful) {
+                    val groups = response.body() ?: arrayListOf()
+                    updateListView(groups)
+                } else if (response.code() == 401) {
+                    handleTokenExpired()
+                } else {
+                    showToast("Failed to load groups")
 
-        closePopupButton.setOnClickListener {
-            dimBackgroundView.visibility = View.GONE
-            createGroupPopup.visibility = View.GONE
+                }
+            }
 
-            popupNameEditText.text.clear()
-            popupDescriptionEditText.text.clear()
-
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(createGroupPopup.windowToken, 0)
-        }
+            override fun onFailure(call: Call<ArrayList<Group>>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
-    private fun fillGroupArray() {
-        val groupsListView = findViewById<ListView>(R.id.groupsListView)
-
-        val groups = ArrayList<Group>()
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-        groups.add(Group("Group Name", "Group Description", "12 Jan 2024", "Group Admin"))
-
+    private fun handleTokenExpired() {
+        PreferencesManager.clearToken(this)
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    private fun updateListView(groups: ArrayList<Group>) {
+        val listView: ListView = findViewById(R.id.groupsListView)
         val adapter = GroupAdapter(this, groups)
         adapter.deleteButtonClickListener = this
+        listView.adapter = adapter
+    }
+    private fun showGroupPopup() {
+        dimBackgroundView.visibility = View.VISIBLE
+        createGroupPopup.visibility = View.VISIBLE
 
-        groupsListView.adapter = adapter
+        val popupCreateGroupButton = findViewById<Button>(R.id.popupCreateGroupButton)
+        popupCreateGroupButton.setOnClickListener {
+            createGroup()
+        }
+    }
+    override fun onDeleteButtonClick(groupId: Long?) {
+        if (groupId != null) {
+            showSuspendPopup(groupId)
+        }
+    }
+    private fun hideGroupPopup() {
+        dimBackgroundView.visibility = View.GONE
+        createGroupPopup.visibility = View.GONE
+        popupNameEditText.text.clear()
+        popupDescriptionEditText.text.clear()
+        groupErrorMessage.visibility = View.GONE
+        resetBorders()
+
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(createGroupPopup.windowToken, 0)
+    }
+    private fun showSuspendPopup(groupId: Long) {
+        this.groupIdToSuspend = groupId
+
+        dimBackgroundView.visibility = View.VISIBLE
+        suspendGroupPopup.visibility = View.VISIBLE
+    }
+    private fun hideSuspendPopup() {
+        dimBackgroundView.visibility = View.GONE
+        suspendGroupPopup.visibility = View.GONE
+        popupReasonEditText.text.clear()
+        suspendErrorMessage.visibility = View.GONE
+        resetBorders()
+
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(suspendGroupPopup.windowToken, 0)
+    }
+    private fun createGroup() {
+        val name = popupNameEditText.text.toString().trim()
+        val description = popupDescriptionEditText.text.toString().trim()
+
+        resetBorders()
+
+        if (name.isEmpty()) {
+            showCreateGroupValidationError("Name cannot be empty")
+            popupNameEditText.background =
+                ContextCompat.getDrawable(this, R.drawable.border_red_square)
+            return
+        }
+
+        if (description.isEmpty()) {
+            showCreateGroupValidationError("Description cannot be empty")
+            popupDescriptionEditText.background =
+                ContextCompat.getDrawable(this, R.drawable.border_red_square)
+            return
+        }
+
+        val newGroup = CreateGroupRequest(
+            name = name,
+            description = description
+        )
+
+        val token = PreferencesManager.getToken(this) ?: return
+        val groupService = ClientUtils.getGroupService(token)
+        val call = groupService.create(newGroup)
+
+        call.enqueue(object : Callback<Group> {
+            override fun onResponse(call: Call<Group>, response: Response<Group>) {
+                if (response.isSuccessful) {
+                    showToast("Group created successfully")
+                    hideGroupPopup()
+                    fetchGroupsFromServer(token)
+                } else {
+                    handleError(response)
+                }
+            }
+
+            override fun onFailure(call: Call<Group>, t: Throwable) {
+                showCreateGroupValidationError("Error: ${t.message}")
+            }
+        })
+    }
+    private fun handleError(response: Response<Group>) {
+        val errorBody = response.errorBody()?.string() ?: "Unknown error"
+        groupErrorMessage.text = "Creating group failed: $errorBody"
+        groupErrorMessage.visibility = View.VISIBLE
+    }
+    private fun showCreateGroupValidationError(message: String) {
+        groupErrorMessage.text = message
+        groupErrorMessage.visibility = View.VISIBLE
+    }
+    private fun resetBorders() {
+        popupNameEditText.background =
+            ContextCompat.getDrawable(this, R.drawable.edit_text_border)
+        popupDescriptionEditText.background =
+            ContextCompat.getDrawable(this, R.drawable.edit_text_border)
+        popupReasonEditText.background =
+            ContextCompat.getDrawable(this, R.drawable.edit_text_border)
+    }
+    private fun suspendGroup(groupId: Long) {
+        val reason = findViewById<EditText>(R.id.popupReasonEditText).text.toString()
+
+        resetBorders()
+
+        if (reason.isEmpty()) {
+            showSuspendValidationError("Suspend reason cannot be empty")
+            popupReasonEditText.background =
+                ContextCompat.getDrawable(this, R.drawable.border_red_square)
+            return
+        }
+
+        val reasonPart = reason.toRequestBody("text/plain".toMediaTypeOrNull())
+
+        val token = PreferencesManager.getToken(this) ?: return
+        val groupService = ClientUtils.getGroupService(token)
+        val call = groupService.delete(groupId, reasonPart)
+
+        call.enqueue(object : Callback<Group> {
+            override fun onResponse(call: Call<Group>, response: Response<Group>) {
+                if (response.isSuccessful) {
+                    showToast("Group suspended successfully")
+                    hideSuspendPopup()
+                    fetchGroupsFromServer(token)
+                } else {
+                    showSuspendValidationError("Failed to suspend group")
+                }
+            }
+
+            override fun onFailure(call: Call<Group>, t: Throwable) {
+                showSuspendValidationError("Error: ${t.message}")
+            }
+        })
     }
 
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_delete_group))
-        dialog.listener = this
-        dialog.show(supportFragmentManager, "ConfirmationDialog")
+    private fun showSuspendValidationError(message: String) {
+        suspendErrorMessage.text = message
+        suspendErrorMessage.visibility = View.VISIBLE
     }
 }
 

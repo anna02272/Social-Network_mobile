@@ -11,12 +11,13 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Group
+import java.time.format.DateTimeFormatter
 
 class GroupAdapter(context: Context, groups: ArrayList<Group>) :
     ArrayAdapter<Group>(context, R.layout.fragment_group, groups) {
 
     interface DeleteButtonClickListener {
-        fun onDeleteButtonClick()
+        fun onDeleteButtonClick(groupId: Long?)
     }
 
     var deleteButtonClickListener: GroupAdapter.DeleteButtonClickListener? = null
@@ -34,21 +35,27 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
         val adminTextView = view.findViewById<TextView>(R.id.adminTextView)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
-        group?.let {
+        group?.let { it ->
             nameTextView.text = it.name
             descriptionTextView.text = it.description
-            dateTextView.text = it.creationDate
-            adminTextView.text = it.groupAdmin
+            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
+            dateTextView.text = it.creationDate.format(formatter)
+            if (group.groupAdmin.isNotEmpty()) {
+                val adminNames = group.groupAdmin.joinToString { it.user.username }
+                adminTextView.text = "$adminNames"
+            } else {
+                adminTextView.text = "No admins"
+            }
         }
 
         moreOptionsButton.setOnClickListener { view ->
-            showPopupMenu(view)
+            showPopupMenu(view, group?.id)
         }
 
         return view
     }
 
-    private fun showPopupMenu(view: View) {
+    private fun showPopupMenu(view: View, groupId: Long?) {
         val popup = PopupMenu(context, view)
 
         val menu = popup.menu
@@ -62,7 +69,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
                     true
                 }
                 R.id.delete -> {
-                    deleteButtonClickListener?.onDeleteButtonClick()
+                    deleteButtonClickListener?.onDeleteButtonClick(groupId)
                     true
                 }
                 else -> false

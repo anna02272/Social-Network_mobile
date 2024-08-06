@@ -29,14 +29,16 @@ import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 
 class PostsActivity : AppCompatActivity(),
@@ -52,6 +54,7 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var fileNameTextView: TextView
     private lateinit var pickImagesLauncher: ActivityResultLauncher<Intent>
     private lateinit var selectedImages: MutableList<Uri>
+    private lateinit var storageReference: StorageReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -66,6 +69,8 @@ class PostsActivity : AppCompatActivity(),
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_posts)
+
+        storageReference = FirebaseStorage.getInstance().reference
 
         setupBottomNavigation()
 
@@ -400,6 +405,4 @@ class PostsActivity : AppCompatActivity(),
         }
         return files
     }
-
-
 }

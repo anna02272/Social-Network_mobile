@@ -1,6 +1,7 @@
 package com.example.socialnetwork.clients
 
 import com.example.socialnetwork.BuildConfig
+import com.example.socialnetwork.services.GroupService
 import com.example.socialnetwork.services.PostService
 import com.example.socialnetwork.services.UserService
 import com.example.socialnetwork.utils.LocalDateTimeDeserializer
@@ -72,4 +73,7 @@ object ClientUtils {
         retrofit.create(UserService::class.java)
     }
 
+    fun getGroupService(token: String? = null): GroupService {
+        return createRetrofit(token).create(GroupService::class.java)
+    }
 }

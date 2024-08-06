@@ -11,7 +11,7 @@ data class Post(
     val user: User?,
 //    val images: List<Image> = emptyList(),
 //    val reactions: List<Reaction> = emptyList(),
-    val reports: List<Report> = emptyList(),
+    val report: List<Report> = emptyList(),
     val comments: List<Comment> = emptyList(),
 //    val group: Group?
 )
