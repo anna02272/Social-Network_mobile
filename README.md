@@ -35,11 +35,23 @@ git clone https://github.com/anna02272/Social-Network_mobile
 
 Ensure all Gradle dependencies are downloaded. Android Studio should automatically start syncing the project. If it doesn't, you can manually sync it by clicking on `File -> Sync Project with Gradle Files`.
 
-### Step 4: Ensure the Server is Running
+### Step 4: Set Up Firebase
+
+1. **Create a Firebase Project**:
+   - Go to the [Firebase Console](https://console.firebase.google.com/).
+   - Click on `Add project` and follow the steps to create a new project.
+
+2. **Add Firebase to Your Android Project**:
+   - In the Firebase console, click on `Add app` and select `Android`.
+   - Register your app with the package name (e.g., `com.example.socialnetwork`).
+   - Download the `google-services.json` file.
+   - Place the `google-services.json` file in the `app/` directory of your Android project.
+
+### Step 5: Ensure the Server is Running
 
 Ensure that the server backend is running by following the instructions in the [server repository](https://github.com/anna02272/Social-Network).
 
-### Step 5: Configure Network
+### Step 6: Configure Network
 
 To enable communication between the mobile application and the server, both must be connected to the same network. Find the IP address of the device where the server is running. Access the server through the IP address and port (e.g., `http://192.168.0.26:8080`).
 
@@ -48,7 +60,7 @@ Since you don’t want to hardcode the IP address in the source code, save it in
 ip_addr=192.168.0.26
 ```
 
-### Step 6: Run the Application
+### Step 7: Run the Application
 
 1. Connect your Android device to your computer or start an emulator.
 2. In Android Studio, click on the `Run` button or press `Shift + F10`.
