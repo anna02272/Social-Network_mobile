@@ -1,55 +1,54 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Comment
 import java.time.format.DateTimeFormatter
 
-class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
-    ArrayAdapter<Comment>(context, R.layout.fragment_comment, comments) {
+class CommentAdapter(
+    private val context: Context,
+    private val comments: List<Comment>
+) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var view = convertView
-        val comment: Comment? = getItem(position)
+    inner class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
+        val usernameTextView: TextView = itemView.findViewById(R.id.usernameTextView)
+        val dateTextView: TextView = itemView.findViewById(R.id.dateTextView)
+        val contentTextView: TextView = itemView.findViewById(R.id.contentTextView)
+        val moreOptionsButton: ImageButton = itemView.findViewById(R.id.moreOptionsButton)
+    }
 
-        if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.fragment_comment, parent, false)
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
+        val view = LayoutInflater.from(context).inflate(R.layout.fragment_comment, parent, false)
+        return CommentViewHolder(view)
+    }
 
-        val profileImage = view!!.findViewById<ImageView>(R.id.profileImage)
-        val usernameTextView = view.findViewById<TextView>(R.id.usernameTextView)
-        val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
-        val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
-        val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
+    override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
+        val comment = comments[position]
 
-        comment?.let { it ->
-//            profileImage.setImageResource(it.profileImageResource)
-            usernameTextView.text = it.user?.profileName?.takeIf { it.isNotEmpty() } ?: it.user?.username
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            dateTextView.text = it.timeStamp.format(formatter)
-            contentTextView.text = it.text
-        }
+        holder.usernameTextView.text = comment.user?.profileName?.takeIf { it.isNotEmpty() } ?: comment.user?.username
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        holder.dateTextView.text = comment.timeStamp.format(formatter)
+        holder.contentTextView.text = comment.text
 
-        moreOptionsButton.setOnClickListener { view ->
+        holder.moreOptionsButton.setOnClickListener { view ->
             showPopupMenu(view)
         }
-
-
-        return view
     }
+
+    override fun getItemCount(): Int = comments.size
 
     private fun showPopupMenu(view: View) {
         val popup = PopupMenu(context, view)
-
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.reply -> {
@@ -71,8 +70,6 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
                 else -> false
             }
         }
-
         popup.show()
     }
-
 }

@@ -11,8 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:layout_alignParentTop="true">
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/headerTitle"
@@ -22,26 +21,19 @@
             android:textSize="14sp"
             android:gravity="center_horizontal"
             android:textStyle="bold"/>
-
-
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.2dp"
-        android:background="@android:color/darker_gray" />
+        android:layout_height="0.5dp"
+        android:background="@android:color/darker_gray"/>
 
-    <ListView
-        android:id="@+id/commentsListView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/commentsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="0.5dp"
-        android:layout_above="@+id/createCommentBox"
-        android:layout_below="@+id/header"
-        android:scrollbars="vertical"
-        android:fillViewport="true"/>
+        android:scrollbars="vertical"/>
 
     <View
         android:layout_width="match_parent"
@@ -54,8 +46,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="4dp"
-        android:layout_alignParentBottom="true"
-        android:layout_weight="0">
+        android:background="@android:color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -94,8 +85,6 @@
                 android:text="@string/post"
                 android:textColor="@color/vector_fill"
                 android:backgroundTint="@color/yellow"/>
-
-
         </LinearLayout>
     </LinearLayout>
 

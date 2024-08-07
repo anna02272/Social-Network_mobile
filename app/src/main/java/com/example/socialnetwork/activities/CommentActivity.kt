@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.CommentAdapter
+import com.example.socialnetwork.adapters.CommentAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Comment
 import com.example.socialnetwork.utils.PreferencesManager
@@ -31,6 +33,9 @@ class CommentActivity : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val recyclerView: RecyclerView = view.findViewById(R.id.commentsRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
         token = PreferencesManager.getToken(requireContext())
         postId = arguments?.getLong("postId")
 
@@ -40,6 +45,13 @@ class CommentActivity : BottomSheetDialogFragment() {
             fetchCommentsFromServer(token!!, postId!!)
         }
     }
+
+    private fun updateRecyclerView(comments: List<Comment>) {
+        val recyclerView: RecyclerView = view?.findViewById(R.id.commentsRecyclerView) ?: return
+        val adapter = CommentAdapter(requireContext(), comments)
+        recyclerView.adapter = adapter
+    }
+
 
     private fun fetchCommentsFromServer(token: String, postId: Long) {
         val commentService = ClientUtils.getCommentService(token)
@@ -52,7 +64,7 @@ class CommentActivity : BottomSheetDialogFragment() {
             ) {
                 if (response.isSuccessful) {
                     val comments = response.body() ?: listOf()
-                    updateListView(comments)
+                    updateRecyclerView(comments)
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
@@ -66,11 +78,6 @@ class CommentActivity : BottomSheetDialogFragment() {
         })
     }
 
-    private fun updateListView(comments: List<Comment>) {
-        val listView: ListView = view?.findViewById(R.id.commentsListView) ?: return
-        val adapter = CommentAdapter(requireContext(), ArrayList(comments))
-        listView.adapter = adapter
-    }
 
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(requireContext())
