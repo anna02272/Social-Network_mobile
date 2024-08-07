@@ -10,9 +10,9 @@ data class Post(
     val isDeleted: Boolean,
     val user: User?,
 //    val images: List<Image> = emptyList(),
-//    val reactions: List<Reaction> = emptyList(),
+    val reactions: List<Reaction> = emptyList(),
     val report: List<Report> = emptyList(),
     val comments: List<Comment> = emptyList(),
-//    val group: Group?
+    val group: Group?
 )
 

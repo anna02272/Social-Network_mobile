@@ -47,39 +47,39 @@ class ReportAdapter(
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         report?.let {
-            userTextView.text = it.fromUser
-            dateTextView.text = it.createdAt
-
-            if (it.content.isNullOrEmpty()) {
-                reportContentTextView.visibility = View.GONE
-            } else {
-                reportContentTextView.text = it.content
-            }
-            if (it.reason.isNullOrEmpty()) {
-                reasonContentTextView.visibility = View.GONE
-            } else {
-                reasonContentTextView.text = it.reason
-            }
-            if (text.isNullOrEmpty()) {
-                reportTextView.visibility = View.GONE
-            } else {
-                reportTextView.text = text
-            }
-            if (reasonText.isNullOrEmpty()) {
-                reasonTextView.visibility = View.GONE
-            } else {
-                reasonTextView.text = reasonText
-            }
-            if (acceptButtonText.isNullOrEmpty()) {
-                acceptButton.visibility = View.GONE
-            } else {
-                acceptButton.text = acceptButtonText
-            }
-            if (deleteButtonText.isNullOrEmpty()) {
-                deleteButton.visibility = View.GONE
-            } else {
-                deleteButton.text = deleteButtonText
-            }
+//            userTextView.text = it.fromUser
+//            dateTextView.text = it.createdAt
+//
+//            if (it.content.isNullOrEmpty()) {
+//                reportContentTextView.visibility = View.GONE
+//            } else {
+//                reportContentTextView.text = it.content
+//            }
+//            if (it.reason.isNullOrEmpty()) {
+//                reasonContentTextView.visibility = View.GONE
+//            } else {
+//                reasonContentTextView.text = it.reason
+//            }
+//            if (text.isNullOrEmpty()) {
+//                reportTextView.visibility = View.GONE
+//            } else {
+//                reportTextView.text = text
+//            }
+//            if (reasonText.isNullOrEmpty()) {
+//                reasonTextView.visibility = View.GONE
+//            } else {
+//                reasonTextView.text = reasonText
+//            }
+//            if (acceptButtonText.isNullOrEmpty()) {
+//                acceptButton.visibility = View.GONE
+//            } else {
+//                acceptButton.text = acceptButtonText
+//            }
+//            if (deleteButtonText.isNullOrEmpty()) {
+//                deleteButton.visibility = View.GONE
+//            } else {
+//                deleteButton.text = deleteButtonText
+//            }
         }
 
         acceptButton.setOnClickListener {

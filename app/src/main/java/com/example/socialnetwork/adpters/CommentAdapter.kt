@@ -31,10 +31,10 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
         comment?.let {
-            profileImage.setImageResource(it.profileImageResource)
-            usernameTextView.text = it.username
-            dateTextView.text = it.date
-            contentTextView.text = it.content
+//            profileImage.setImageResource(it.profileImageResource)
+//            usernameTextView.text = it.username
+//            dateTextView.text = it.date
+//            contentTextView.text = it.content
         }
 
         moreOptionsButton.setOnClickListener { view ->

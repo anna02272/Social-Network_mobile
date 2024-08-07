@@ -27,12 +27,6 @@ class CommentActivity : BottomSheetDialogFragment() {
         val commentsListView: ListView = view.findViewById(R.id.commentsListView)
 
         val comments = ArrayList<Comment>()
-        comments.add(Comment(R.drawable.smiley_circle, "User1", "12 Jan 2024", "This is an example Comment content. It can be any text that a user might comment on social network app."))
-        comments.add(Comment(R.drawable.smiley_circle, "User2", "13 Jan 2024", "Comment content 2"))
-        comments.add(Comment(R.drawable.smiley_circle, "User3", "12 Jan 2024", "Comment content 3"))
-        comments.add(Comment(R.drawable.smiley_circle, "User4", "13 Jan 2024", "Comment content 4"))
-        comments.add(Comment(R.drawable.smiley_circle, "User1", "12 Jan 2024", "Comment content 5"))
-        comments.add(Comment(R.drawable.smiley_circle, "User2", "13 Jan 2024", "Comment content 6"))
 
         val adapter = CommentAdapter(requireContext(), comments)
 

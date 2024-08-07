@@ -28,13 +28,6 @@ class CommentReportsFragment : Fragment(),
         val commentReportsListView = view.findViewById<ListView>(R.id.commentReportsListView)
 
         val reports = ArrayList<Report>()
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-        reports.add(Report("User",  "12 Jan 2024", "Text", "BRAKES_RULES"))
-
 
         val adapter = ReportAdapter(
             requireContext(),

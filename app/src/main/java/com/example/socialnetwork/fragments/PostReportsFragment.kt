@@ -28,14 +28,7 @@ class PostReportsFragment : Fragment(),
         val postReportsListView = view.findViewById<ListView>(R.id.postReportsListView)
 
         val reports = ArrayList<Report>()
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
-        reports.add(Report("User",  "12 Jan 2024", "Post", "HATE"))
+
 
         val adapter = ReportAdapter(
             requireContext(),

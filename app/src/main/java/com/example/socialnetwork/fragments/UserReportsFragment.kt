@@ -29,13 +29,6 @@ class UserReportsFragment : Fragment(),
         val userReportsListView = view.findViewById<ListView>(R.id.userReportsListView)
 
         val reports = ArrayList<Report>()
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
-        reports.add(Report("User",  "12 Jan 2024", "User", "COPYRIGHT_VIOLATION"))
 
         val adapter = ReportAdapter(
             requireContext(),

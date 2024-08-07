@@ -28,12 +28,6 @@ class BlockedUsersFragment : Fragment(),
         val blockedUsersListView = view.findViewById<ListView>(R.id.blockedUsersListView)
 
         val reports = ArrayList<Report>()
-        reports.add(Report("User",  "12 Jan 2024"))
-        reports.add(Report("User",  "12 Jan 2024"))
-        reports.add(Report("User",  "12 Jan 2024"))
-        reports.add(Report("User",  "12 Jan 2024"))
-        reports.add(Report("User",  "12 Jan 2024"))
-
 
         val adapter = ReportAdapter(
             requireContext(),
