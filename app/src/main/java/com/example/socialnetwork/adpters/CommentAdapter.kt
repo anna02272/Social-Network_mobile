@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Comment
+import java.time.format.DateTimeFormatter
 
 class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
     ArrayAdapter<Comment>(context, R.layout.fragment_comment, comments) {
@@ -30,11 +31,12 @@ class CommentAdapter(context: Context, comments: ArrayList<Comment>) :
         val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
 
-        comment?.let {
+        comment?.let { it ->
 //            profileImage.setImageResource(it.profileImageResource)
-//            usernameTextView.text = it.username
-//            dateTextView.text = it.date
-//            contentTextView.text = it.content
+            usernameTextView.text = it.user?.profileName?.takeIf { it.isNotEmpty() } ?: it.user?.username
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            dateTextView.text = it.timeStamp.format(formatter)
+            contentTextView.text = it.text
         }
 
         moreOptionsButton.setOnClickListener { view ->

@@ -94,7 +94,11 @@ class PostsActivity : AppCompatActivity(),
     }
 
     override fun onCommentButtonClick(post: Post) {
-        val commentActivity = CommentActivity()
+        val commentActivity = CommentActivity().apply {
+            arguments = Bundle().apply {
+                putLong("postId", post.id)
+            }
+        }
         commentActivity.show(supportFragmentManager, "commentActivity")
     }
 

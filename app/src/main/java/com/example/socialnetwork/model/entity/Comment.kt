@@ -12,6 +12,6 @@ data class Comment(
     val replies: List<Comment> = emptyList(),
     val parentComment: Comment,
     val reactions: List<Reaction> = emptyList(),
-    val report: List<Report> = emptyList(),
+    val report: List<Report> = emptyList()
 )
 
