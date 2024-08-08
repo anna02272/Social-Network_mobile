@@ -1,6 +1,7 @@
 package com.example.socialnetwork.services
 
 import com.example.socialnetwork.model.entity.Comment
+import com.example.socialnetwork.model.entity.CreateCommentRequest
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -13,7 +14,7 @@ interface CommentService {
     @POST("comments/create/{id}")
     fun create(
         @Path("id") postId: Long,
-        @Body comment: Comment
+        @Body comment: CreateCommentRequest
     ): Call<Comment>
 
     @Headers(

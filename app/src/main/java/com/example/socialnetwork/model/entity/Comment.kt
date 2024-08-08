@@ -3,7 +3,7 @@ package com.example.socialnetwork.model.entity
 import java.time.LocalDate
 
 data class Comment(
-    val id: Long?,
+    val id: Long,
     val text: String,
     val timeStamp: LocalDate,
     val isDeleted: Boolean,
@@ -15,3 +15,6 @@ data class Comment(
     val report: List<Report> = emptyList()
 )
 
+data class CreateCommentRequest(
+    val text: String
+)

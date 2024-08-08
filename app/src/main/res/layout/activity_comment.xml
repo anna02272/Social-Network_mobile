@@ -68,7 +68,7 @@
             </FrameLayout>
 
             <EditText
-                android:id="@+id/contentTextView"
+                android:id="@+id/contentEditText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -79,13 +79,23 @@
                 android:background="@drawable/rounded_grey_background"/>
 
             <Button
-                android:id="@+id/createPostButton"
+                android:id="@+id/createCommentButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/post"
                 android:textColor="@color/vector_fill"
                 android:backgroundTint="@color/yellow"/>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/errorMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textColor="@android:color/holo_red_dark"
+            android:background="@drawable/white_border"
+            android:textSize="14sp"
+            android:visibility="gone"/>
     </LinearLayout>
 
 </LinearLayout>
