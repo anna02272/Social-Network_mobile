@@ -41,7 +41,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
             val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
             dateTextView.text = it.creationDate.format(formatter)
             if (group.groupAdmin.isNotEmpty()) {
-                val adminNames = group.groupAdmin.joinToString { it.user.username }
+                val adminNames = group.groupAdmin.joinToString { it.user?.username ?: "" }
                 adminTextView.text = "$adminNames"
             } else {
                 adminTextView.text = "No admins"

@@ -83,6 +83,10 @@ object ClientUtils {
         retrofit.create(UserService::class.java)
     }
 
+    fun getUserService(token: String? = null): UserService {
+        return createRetrofit(token).create(UserService::class.java)
+    }
+
     fun getGroupService(token: String? = null): GroupService {
         return createRetrofit(token).create(GroupService::class.java)
     }

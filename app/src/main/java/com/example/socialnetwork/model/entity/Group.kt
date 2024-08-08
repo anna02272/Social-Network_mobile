@@ -8,7 +8,7 @@ data class Group (
     val description: String,
     val creationDate: LocalDateTime,
     val isSuspended: Boolean,
-    val suspendedReason: String,
+    val suspendedReason: String?,
     val groupAdmin: List<GroupAdmin> = emptyList(),
     val post: List<Post> = emptyList(),
     val groupRequest: List<GroupRequest> = emptyList(),

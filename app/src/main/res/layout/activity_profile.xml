@@ -126,6 +126,7 @@
                     android:drawablePadding="8dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"/>
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="0.2dp"
@@ -243,7 +244,16 @@
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_border"
                 android:hint="@string/about"
-                android:padding="10dp"
+                android:padding="10dp" />
+
+            <Button
+                android:id="@+id/saveChangesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/yellow"
+                android:text="@string/save_changes"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="right"
                 android:layout_marginBottom="15dp"/>
 
             <View
@@ -320,10 +330,19 @@
                 android:text="@string/show_password"
                 android:layout_gravity="end"/>
 
+            <Button
+                android:id="@+id/changePasswordButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/yellow"
+                android:text="@string/change_password"
+                android:layout_marginTop="10dp"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="0.2dp"
                 android:background="@android:color/darker_gray" />
+
 
             <TextView
                 android:id="@+id/groupsTextView"
@@ -335,10 +354,10 @@
                 android:layout_gravity="start"/>
 
 
-            <android.widget.ListView
-                android:id="@+id/groupsProfileListView"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/groupsProfileRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="80dp"
                 android:layout_below="@id/createPostBox"/>
 
             <TextView
@@ -351,10 +370,10 @@
                 android:layout_gravity="start"/>
 
 
-            <android.widget.ListView
-                android:id="@+id/friendsListView"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/friendsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="80dp"
                 android:layout_below="@id/createPostBox"/>
 
         </LinearLayout>

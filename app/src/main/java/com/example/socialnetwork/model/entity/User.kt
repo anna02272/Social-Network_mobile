@@ -1,9 +1,5 @@
 package com.example.socialnetwork.model.entity
 
-import com.example.socialnetwork.model.entity.Comment
-import com.example.socialnetwork.model.entity.FriendRequest
-import com.example.socialnetwork.model.entity.Post
-import com.example.socialnetwork.model.entity.Report
 import java.time.LocalDateTime
 
 data class User(
@@ -17,7 +13,7 @@ data class User(
     val type: EUserType,
     val description: String? = null,
     val profileName: String? = null,
-    val image: Image? = null,
+    val image: Image?,
     val groupAdmins: List<GroupAdmin> = emptyList(),
     val post: List<Post> = emptyList(),
     val reaction: List<Reaction> = emptyList(),
