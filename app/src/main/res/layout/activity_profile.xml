@@ -29,10 +29,11 @@
                 android:paddingBottom="16dp">
 
                 <ImageView
-                    android:id="@+id/closeProfileEditButton"
-                    android:layout_width="24dp"
+                    android:id="@+id/deleteProfilePhotoButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="24dp"
                     android:src="@drawable/close" />
+
 
                 <ImageView
                     android:id="@+id/profileImageView"
@@ -105,14 +106,6 @@
                         android:layout_marginTop="10dp"
                         android:drawableLeft="@drawable/add_photos"/>
 
-                    <TextView
-                        android:id="@+id/fileNameTextView"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/no_file_chosen"
-                        android:layout_marginTop="10dp"
-                        android:paddingLeft="10dp" />
                 </LinearLayout>
 
                 <Button
@@ -125,7 +118,8 @@
                     android:drawableLeft="@drawable/camera"
                     android:drawablePadding="8dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp"
+                    android:layout_gravity="right"/>
 
                 <View
                     android:layout_width="match_parent"
@@ -357,8 +351,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/groupsProfileRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_below="@id/createPostBox"/>
+                android:layout_height="80dp" />
 
             <TextView
                 android:id="@+id/friendsTextView"
@@ -373,8 +366,18 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/friendsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:layout_below="@id/createPostBox"/>
+                android:layout_height="80dp" />
+
+
+            <Button
+                android:id="@+id/logout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/logout"
+                android:backgroundTint="@color/yellow"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="right"
+                />
 
         </LinearLayout>
     </ScrollView>

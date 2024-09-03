@@ -67,10 +67,6 @@ interface UserService {
     @PUT("users/update/{id}")
     fun update(@Path("id") id: Long, @Body user: User): Call<User>
 
-    @Headers(
-        "User-Agent: Mobile-Android",
-        "Content-Type: application/json"
-    )
     @Multipart
     @PUT("users/updateProfilePicture/{id}")
     fun updateProfilePicture(@Path("id") id: Long, @Part profilePicture: MultipartBody.Part): Call<User>
