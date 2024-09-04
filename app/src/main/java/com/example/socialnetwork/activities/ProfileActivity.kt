@@ -1,6 +1,6 @@
 package com.example.socialnetwork.activities
 
-import android.app.ProgressDialog
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,8 +10,11 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -62,6 +65,8 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var errorMessageTextView: TextView
     private lateinit var passwordErrorMessageTextView: TextView
     private lateinit var showPasswordCheckBox: CheckBox
+    private lateinit var progressBar: ProgressBar
+    private lateinit var selectImageLauncher: ActivityResultLauncher<Intent>
 
     private var filePath: Uri? = null
     private val PICK_IMAGE_REQUEST = 22
@@ -86,6 +91,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         fetchUserData(token)
+        registerActivityResultLauncher()
     }
     private fun initializeViews() {
         profileImageView = findViewById(R.id.profileImageView)
@@ -110,6 +116,7 @@ class ProfileActivity : AppCompatActivity() {
         errorMessageTextView = findViewById(R.id.error_message)
         passwordErrorMessageTextView = findViewById(R.id.password_error_message)
         showPasswordCheckBox = findViewById(R.id.showPasswordCheckBox)
+        progressBar = findViewById(R.id.progressBar)
 
         storage = FirebaseStorage.getInstance()
         storageReference = storage!!.reference
@@ -158,6 +165,22 @@ class ProfileActivity : AppCompatActivity() {
             )
 
             userId?.let { updateUser(it, user) }
+        }
+    }
+
+    private fun registerActivityResultLauncher(){
+        selectImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.data != null) {
+                filePath = result.data!!.data
+                try {
+                    Picasso.get()
+                        .load(filePath)
+                        .transform(CircleTransform())
+                        .into(profileImageView)
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -237,7 +260,7 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
     private fun loadProfileImage(userId: Long) {
-        val ref = storageReference!!.child("images/$userId")
+        val ref = storageReference!!.child("profile_images/$userId")
         ref.downloadUrl.addOnSuccessListener { uri ->
             Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
         }.addOnFailureListener {
@@ -453,14 +476,13 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun selectImage() {
-        val intent = Intent()
-        intent.type = "image/*"
-        intent.action = Intent.ACTION_GET_CONTENT
-        startActivityForResult(
-            Intent.createChooser(intent, "Select Image from here..."),
-            PICK_IMAGE_REQUEST
-        )
+        val intent = Intent().apply {
+            type = "image/*"
+            action = Intent.ACTION_GET_CONTENT
+        }
+        selectImageLauncher.launch(Intent.createChooser(intent, "Select Image from here..."))
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
@@ -477,26 +499,24 @@ class ProfileActivity : AppCompatActivity() {
     }
     private fun uploadImage(userId: Long) {
         if (filePath != null) {
-            val progressDialog = ProgressDialog(this)
-            progressDialog.setTitle("Uploading...")
-            progressDialog.show()
+            progressBar.visibility = View.VISIBLE
 
-            val ref = storageReference!!.child("images/$userId")
+            val ref = storageReference!!.child("profile_images/$userId")
             ref.putFile(filePath!!)
                 .addOnSuccessListener {
                     ref.downloadUrl.addOnSuccessListener {
                         updateProfilePictureOnBackend(userId)
-                        progressDialog.dismiss()
+                        progressBar.visibility = View.GONE
                         showToast("Image Uploaded!")
                     }
                 }
                 .addOnFailureListener { e ->
-                    progressDialog.dismiss()
+                    progressBar.visibility = View.GONE
                     showToast("Failed: ${e.message}")
                 }
                 .addOnProgressListener { taskSnapshot ->
-                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount)
-                    progressDialog.setMessage("Uploaded ${progress.toInt()}%")
+                    val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
+                    progressBar.progress = progress
                 }
         }
     }
@@ -539,20 +559,18 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun deleteImage(userId: Long) {
-        val progressDialog = ProgressDialog(this)
-        progressDialog.setTitle("Deleting...")
-        progressDialog.show()
+        progressBar.visibility = View.VISIBLE
 
-        val ref = storageReference!!.child("images/$userId")
+        val ref = storageReference!!.child("profile_images/$userId")
         ref.delete()
             .addOnSuccessListener {
                 deleteProfilePictureFromBackend(userId)
-                progressDialog.dismiss()
+                progressBar.visibility = View.GONE
                 showToast("Profile photo deleted!")
                 profileImageView.setImageResource(R.drawable.smiley_circle)
             }
             .addOnFailureListener { e ->
-                progressDialog.dismiss()
+                progressBar.visibility = View.GONE
                 showToast("Failed to delete photo: " + e.message)
             }
     }
