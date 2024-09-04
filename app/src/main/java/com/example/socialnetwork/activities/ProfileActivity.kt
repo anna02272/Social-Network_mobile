@@ -4,17 +4,22 @@ import android.app.ProgressDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
+import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.BulletPointAdapter
 import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.ChangePassword
 import com.example.socialnetwork.model.entity.Group
 import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.CircleTransform
@@ -47,6 +52,16 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var profileNameEditText: EditText
     private lateinit var aboutEditText: EditText
     private lateinit var deleteProfilePhotoButton: ImageView
+    private lateinit var changePasswordButton: Button
+    private lateinit var chooseFileButton: Button
+    private lateinit var changePhotoButton: Button
+    private lateinit var saveChangesButton: Button
+    private lateinit var currentPasswordEditText: EditText
+    private lateinit var newPasswordEditText: EditText
+    private lateinit var confirmPasswordEditText: EditText
+    private lateinit var errorMessageTextView: TextView
+    private lateinit var passwordErrorMessageTextView: TextView
+    private lateinit var showPasswordCheckBox: CheckBox
 
     private var filePath: Uri? = null
     private val PICK_IMAGE_REQUEST = 22
@@ -59,6 +74,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         initializeViews()
+        initializeButtons()
         setupBottomNavigation()
 
         val token = PreferencesManager.getToken(this)
@@ -84,11 +100,21 @@ class ProfileActivity : AppCompatActivity() {
         profileNameEditText = findViewById(R.id.profileNameEditText)
         aboutEditText = findViewById(R.id.aboutEditText)
         deleteProfilePhotoButton = findViewById(R.id.deleteProfilePhotoButton)
-        val chooseFileButton: Button = findViewById(R.id.chooseFileButton)
-        val changePhotoButton: Button = findViewById(R.id.changePhotoButton)
+        chooseFileButton = findViewById(R.id.chooseFileButton)
+        changePhotoButton = findViewById(R.id.changePhotoButton)
+        saveChangesButton = findViewById(R.id.saveChangesButton)
+        changePasswordButton = findViewById(R.id.changePasswordButton)
+        currentPasswordEditText = findViewById(R.id.currentPasswordEditText)
+        newPasswordEditText = findViewById(R.id.newPasswordEditText)
+        confirmPasswordEditText = findViewById(R.id.confirmPasswordEditText)
+        errorMessageTextView = findViewById(R.id.error_message)
+        passwordErrorMessageTextView = findViewById(R.id.password_error_message)
+        showPasswordCheckBox = findViewById(R.id.showPasswordCheckBox)
+
         storage = FirebaseStorage.getInstance()
         storageReference = storage!!.reference
-
+    }
+    private fun initializeButtons() {
         chooseFileButton.setOnClickListener {
             selectImage()
         }
@@ -112,7 +138,29 @@ class ProfileActivity : AppCompatActivity() {
         findViewById<Button>(R.id.logout).setOnClickListener {
             performLogout()
         }
+
+        changePasswordButton.setOnClickListener {
+         changePassword()
+        }
+
+        showPasswordCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            showPassword(isChecked)
+        }
+
+        saveChangesButton.setOnClickListener {
+            val user = User(
+                firstName = firstNameEditText.text.toString(),
+                lastName = lastNameEditText.text.toString(),
+                username = usernameEditText.text.toString(),
+                email = emailEditText.text.toString(),
+                profileName = profileNameEditText.text.toString(),
+                description = aboutEditText.text.toString()
+            )
+
+            userId?.let { updateUser(it, user) }
+        }
     }
+
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
 
@@ -261,6 +309,149 @@ class ProfileActivity : AppCompatActivity() {
             }
         })
     }
+    private fun updateUser(id: Long, user: User) {
+        clearError()
+        if (user.firstName.isBlank()) {
+            showValidationError(firstNameEditText, "First name cannot be empty")
+           return
+        }
+        if (user.lastName.isBlank()) {
+            showValidationError(lastNameEditText, "Last name cannot be empty")
+            return
+        }
+        val token = PreferencesManager.getToken(this) ?: return
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.update(id, user)
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    showToast("Profile updated successfully")
+                    populateUserData(response.body()!!)
+                    clearError()
+                } else {
+                    showError( "Failed to update profile")
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showError( "Error: ${t.message}")
+            }
+        })
+    }
+    private fun changePassword() {
+        clearPasswordError()
+
+        val currentPassword = currentPasswordEditText.text.toString().trim()
+        val newPassword = newPasswordEditText.text.toString().trim()
+        val confirmPassword = confirmPasswordEditText.text.toString().trim()
+
+        if (currentPassword.isEmpty()) {
+            showPasswordValidationError(currentPasswordEditText, "Current password is required.")
+            return
+        }
+
+        if (newPassword.isEmpty()) {
+            showPasswordValidationError(newPasswordEditText, "New password is required.")
+            return
+        }
+
+        if (newPassword.length < 8) {
+            showPasswordValidationError(newPasswordEditText, "New Password must be at least 8 characters long.")
+            return
+        }
+
+        if (confirmPassword.isEmpty()) {
+            showPasswordValidationError(confirmPasswordEditText, "Confirm password is required.")
+            return
+        }
+
+        if (newPassword != confirmPassword) {
+            showPasswordValidationError(confirmPasswordEditText, "Passwords do not match.")
+            return
+        }
+
+        performChangePassword(currentPassword, newPassword)
+    }
+    private fun performChangePassword(currentPassword: String, newPassword: String) {
+        val changePasswordRequest = ChangePassword(
+            currentPassword = currentPassword,
+            newPassword = newPassword,
+            confirmPassword = newPassword
+        )
+        val token = PreferencesManager.getToken(this) ?: return
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.changePassword(changePasswordRequest)
+
+        call.enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    showToast("Password changed successfully!")
+                    clearPasswordFields()
+                    clearPasswordError()
+                } else {
+                    showPasswordError("Wrong current password. Please try again.")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                showPasswordError("Error: ${t.message}")
+            }
+        })
+    }
+    private fun showPassword(isChecked: Boolean){
+        if (isChecked) {
+            currentPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            newPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            confirmPasswordEditText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        } else {
+            currentPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            newPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            confirmPasswordEditText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+        currentPasswordEditText.setSelection(currentPasswordEditText.text.length)
+        newPasswordEditText.setSelection(newPasswordEditText.text.length)
+        confirmPasswordEditText.setSelection(confirmPasswordEditText.text.length)
+    }
+
+    private fun showError(message: String) {
+        errorMessageTextView.text = message
+        errorMessageTextView.visibility = View.VISIBLE
+    }
+
+    private fun showValidationError(editText: EditText, message: String) {
+        editText.background = ContextCompat.getDrawable(this, R.drawable.border_red_square)
+        errorMessageTextView.text = message
+        errorMessageTextView.visibility = View.VISIBLE
+    }
+
+    private fun clearError(){
+        errorMessageTextView.visibility = View.GONE
+        firstNameEditText.background = ContextCompat.getDrawable(this@ProfileActivity, R.drawable.edit_text_border)
+        lastNameEditText.background = ContextCompat.getDrawable(this@ProfileActivity, R.drawable.edit_text_border)
+    }
+    private fun showPasswordValidationError(editText:EditText, message: String) {
+        editText.background = ContextCompat.getDrawable(this, R.drawable.border_red_square)
+        passwordErrorMessageTextView.text = message
+        passwordErrorMessageTextView.visibility = View.VISIBLE
+    }
+
+    private fun showPasswordError(message: String) {
+        passwordErrorMessageTextView.text = message
+        passwordErrorMessageTextView.visibility = View.VISIBLE
+    }
+    private fun clearPasswordError(){
+        passwordErrorMessageTextView.visibility = View.GONE
+        currentPasswordEditText.background = ContextCompat.getDrawable(this@ProfileActivity, R.drawable.edit_text_border)
+        newPasswordEditText.background = ContextCompat.getDrawable(this@ProfileActivity, R.drawable.edit_text_border)
+        confirmPasswordEditText.background = ContextCompat.getDrawable(this@ProfileActivity, R.drawable.edit_text_border)
+    }
+    private fun clearPasswordFields() {
+        currentPasswordEditText.text.clear()
+        newPasswordEditText.text.clear()
+        confirmPasswordEditText.text.clear()
+    }
+
     private fun selectImage() {
         val intent = Intent()
         intent.type = "image/*"

@@ -240,6 +240,16 @@
                 android:hint="@string/about"
                 android:padding="10dp" />
 
+            <TextView
+                android:id="@+id/error_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textColor="@android:color/holo_red_dark"
+                android:background="@drawable/white_border"
+                android:textSize="14sp"
+                android:visibility="gone"/>
+
             <Button
                 android:id="@+id/saveChangesButton"
                 android:layout_width="wrap_content"
@@ -279,7 +289,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_border"
                 android:hint="@string/current_password"
-                android:padding="10dp" />
+                android:padding="10dp"
+                android:inputType="textPassword"/>
 
             <TextView
                 android:id="@+id/newPasswordTextView"
@@ -297,7 +308,8 @@
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_border"
                 android:hint="@string/new_password"
-                android:padding="10dp" />
+                android:padding="10dp"
+                android:inputType="textPassword"/>
 
             <TextView
                 android:id="@+id/confirmPasswordTextView"
@@ -315,7 +327,19 @@
                 android:layout_weight="1"
                 android:background="@drawable/edit_text_border"
                 android:hint="@string/confirm_password"
-                android:padding="10dp" />
+                android:padding="10dp"
+                android:inputType="textPassword"
+                />
+
+            <TextView
+                android:id="@+id/password_error_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:textColor="@android:color/holo_red_dark"
+                android:background="@drawable/white_border"
+                android:textSize="14sp"
+                android:visibility="gone"/>
 
             <CheckBox
                 android:id="@+id/showPasswordCheckBox"
