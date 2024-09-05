@@ -1,6 +1,7 @@
 package com.example.socialnetwork.adpters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,10 +25,11 @@ class ReportAdapter(
     }
     interface DeleteButtonClickListener {
         fun onDeleteButtonClick()
+//        fun onDeleteButtonClick(report: Report, position: Int)
     }
 
-    var acceptButtonClickListener: ReportAdapter.AcceptButtonClickListener? = null
-    var deleteButtonClickListener: ReportAdapter.DeleteButtonClickListener? = null
+    var acceptButtonClickListener: AcceptButtonClickListener? = null
+    var deleteButtonClickListener: DeleteButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
@@ -47,47 +49,66 @@ class ReportAdapter(
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
         report?.let {
-//            userTextView.text = it.fromUser
-//            dateTextView.text = it.createdAt
-//
-//            if (it.content.isNullOrEmpty()) {
-//                reportContentTextView.visibility = View.GONE
-//            } else {
-//                reportContentTextView.text = it.content
-//            }
-//            if (it.reason.isNullOrEmpty()) {
-//                reasonContentTextView.visibility = View.GONE
-//            } else {
-//                reasonContentTextView.text = it.reason
-//            }
-//            if (text.isNullOrEmpty()) {
-//                reportTextView.visibility = View.GONE
-//            } else {
-//                reportTextView.text = text
-//            }
-//            if (reasonText.isNullOrEmpty()) {
-//                reasonTextView.visibility = View.GONE
-//            } else {
-//                reasonTextView.text = reasonText
-//            }
-//            if (acceptButtonText.isNullOrEmpty()) {
-//                acceptButton.visibility = View.GONE
-//            } else {
-//                acceptButton.text = acceptButtonText
-//            }
-//            if (deleteButtonText.isNullOrEmpty()) {
-//                deleteButton.visibility = View.GONE
-//            } else {
-//                deleteButton.text = deleteButtonText
-//            }
-        }
+            try {
+                userTextView.text = it.user.username
+                dateTextView.text = it.timestamp.toString()
 
+                val postContent = it.post?.content
+                val commentText = it.comment?.text
+                val reportedUser = it.reportedUser?.username
+
+                when {
+                    !postContent.isNullOrEmpty() -> {
+                        reportContentTextView.text = postContent
+                        reportContentTextView.visibility = View.VISIBLE
+                    }
+                    !commentText.isNullOrEmpty() -> {
+                        reportContentTextView.text = commentText
+                        reportContentTextView.visibility = View.VISIBLE
+                    }
+                    !reportedUser.isNullOrEmpty() -> {
+                        reportContentTextView.text = reportedUser
+                        reportContentTextView.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        reportContentTextView.text = ""
+                        reportContentTextView.visibility = View.GONE
+                    }
+                }
+
+                reasonContentTextView.visibility =
+                    if (it.reason.name.isNullOrEmpty()) View.GONE else View.VISIBLE
+                reasonContentTextView.text = it.reason.name
+
+                reportTextView.visibility = if (text.isNullOrEmpty()) View.GONE else View.VISIBLE
+                reportTextView.text = text
+
+                reasonTextView.visibility =
+                    if (reasonText.isNullOrEmpty()) View.GONE else View.VISIBLE
+                reasonTextView.text = reasonText
+
+                acceptButton.visibility =
+                    if (acceptButtonText.isNullOrEmpty()) View.GONE else View.VISIBLE
+                acceptButton.text = acceptButtonText
+
+                deleteButton.visibility =
+                    if (deleteButtonText.isNullOrEmpty()) View.GONE else View.VISIBLE
+                deleteButton.text = deleteButtonText
+            } catch (e: Exception) {
+                Log.e("ReportAdapter", "Error binding view: ${e.message}", e)
+            }
+        }
         acceptButton.setOnClickListener {
-            acceptButtonClickListener?.onAcceptButtonClick()
+            report?.let {
+                acceptButtonClickListener?.onAcceptButtonClick()
+//                acceptButtonClickListener?.onAcceptButtonClick(it, position)
+            }
         }
 
         deleteButton.setOnClickListener {
-            deleteButtonClickListener?.onDeleteButtonClick()
+            report?.let {
+                deleteButtonClickListener?.onDeleteButtonClick()
+            }
         }
 
         return view
