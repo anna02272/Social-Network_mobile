@@ -10,17 +10,16 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.activities.LoginActivity
-import com.example.socialnetwork.adpters.ReportAdapter
+import com.example.socialnetwork.adpters.BannedAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Banned
-import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.utils.PreferencesManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 class BlockedUsersFragment : Fragment(),
-    ReportAdapter.AcceptButtonClickListener,
+    BannedAdapter.AcceptButtonClickListener,
     ConfirmationDialogFragment.ConfirmationDialogListener {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,7 +35,7 @@ class BlockedUsersFragment : Fragment(),
             return view
         }
 
-//        fetchBlockedUsersFromServer(token)
+        fetchBlockedUsersFromServer(token)
 
         return view
     }
@@ -51,7 +50,7 @@ class BlockedUsersFragment : Fragment(),
             ) {
                 if (response.isSuccessful) {
                     val banned = response.body() ?: arrayListOf()
-//                    updateListView(banned)
+                    updateListView(banned)
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
@@ -72,19 +71,16 @@ class BlockedUsersFragment : Fragment(),
         requireActivity().finish()
     }
 
-//    private fun updateListView(banned: List<Banned>) {
-//        val listView: ListView = requireView().findViewById(R.id.blockedUsersListView)
-//        val adapter = ReportAdapter(
-//            requireContext(),
-//            ArrayList(banned),
-//            null,
-//            null,
-//            getString(R.string.unblock_user),
-//            null)
-//
-//        adapter.acceptButtonClickListener = this
-//        listView.adapter = adapter
-//    }
+    private fun updateListView(banned: List<Banned>) {
+        val listView: ListView = requireView().findViewById(R.id.blockedUsersListView)
+        val adapter = BannedAdapter(
+            requireContext(),
+            ArrayList(banned),
+            getString(R.string.unblock_user))
+
+        adapter.acceptButtonClickListener = this
+        listView.adapter = adapter
+    }
 
     override fun onAcceptButtonClick() {
         showConfirmationDialog()
