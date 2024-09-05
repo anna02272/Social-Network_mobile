@@ -1,6 +1,5 @@
 package com.example.socialnetwork.adpters
 
-import com.example.socialnetwork.R
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -11,15 +10,28 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.viewpager.widget.ViewPager
+import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Post
+import com.google.firebase.FirebaseApp
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import java.time.format.DateTimeFormatter
 
 class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     ArrayAdapter<Post?>(mContext, 0, posts as List<Post?>) {
     private val mPosts: ArrayList<Post>
+    private lateinit var storageReference: StorageReference
 
     init {
-        mPosts = posts
+        mPosts = ArrayList(posts)
+        initializeFirebaseStorage()
+    }
+
+    private fun initializeFirebaseStorage() {
+        FirebaseApp.initializeApp(context)
+        val firebaseStorage = FirebaseStorage.getInstance()
+        storageReference = firebaseStorage.reference
     }
     interface CommentButtonClickListener {
         fun onCommentButtonClick(post: Post)
@@ -52,6 +64,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
         val commentButton = view.findViewById<ImageButton>(R.id.commentButton)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
+        val viewPager = view.findViewById<ViewPager>(R.id.viewPager)
 
         post?.let { it ->
 //            profileImage.setImageResource(it.user.image)
@@ -59,6 +72,9 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
             dateTextView.text = it.creationDate.format(formatter)
             contentTextView.text = it.content
+
+            viewPager.adapter = null
+            loadPostImages(it.id, viewPager)
         }
 
         commentButton.setOnClickListener {
@@ -74,7 +90,34 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         }
 
         return view
+    }
+    private fun loadPostImages(postId: Long, viewPager: ViewPager) {
+        val imageFolderRef = storageReference.child("post_images/$postId/")
 
+        imageFolderRef.listAll()
+            .addOnSuccessListener { listResult ->
+                val imageUrls = mutableListOf<String>()
+                val imageItems = listResult.items.size
+
+                if (imageItems == 0) {
+                    viewPager.visibility = View.GONE
+                } else {
+                    listResult.items.forEachIndexed { index, item ->
+                        item.downloadUrl.addOnSuccessListener { uri ->
+                            imageUrls.add(uri.toString())
+                            if (index == imageItems - 1) {
+                                viewPager.adapter = ImagePagerAdapter(mContext, imageUrls)
+                                viewPager.visibility = View.VISIBLE
+                            }
+                        }.addOnFailureListener {
+                            showToast("Failed to load image: ${it.message}")
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                showToast("Failed to list images: ${it.message}")
+            }
     }
     private fun showPopupMenu(view: View, post: Post) {
         val popup = PopupMenu(mContext, view)
@@ -104,5 +147,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
 
         popup.show()
     }
-
+    private fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
 }

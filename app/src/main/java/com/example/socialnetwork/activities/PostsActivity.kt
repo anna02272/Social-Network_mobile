@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
+import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -29,6 +30,7 @@ import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -55,7 +57,6 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var pickImagesLauncher: ActivityResultLauncher<Intent>
     private lateinit var selectedImages: MutableList<Uri>
     private lateinit var storageReference: StorageReference
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -70,7 +71,7 @@ class PostsActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_posts)
 
-        storageReference = FirebaseStorage.getInstance().reference
+        initializeFirebaseStorage()
 
         setupBottomNavigation()
 
@@ -83,7 +84,7 @@ class PostsActivity : AppCompatActivity(),
         initializeActivityResultLauncher()
 
         findViewById<Button>(R.id.sort).setOnClickListener {
-            performLogout()
+
         }
 
         findViewById<Button>(R.id.chooseFileButton).setOnClickListener {
@@ -91,6 +92,13 @@ class PostsActivity : AppCompatActivity(),
         }
 
         fileNameTextView = findViewById(R.id.fileNameTextView)
+
+    }
+
+    private fun initializeFirebaseStorage() {
+        FirebaseApp.initializeApp(this)
+        val firebaseStorage = FirebaseStorage.getInstance()
+        storageReference = firebaseStorage.reference
     }
 
     override fun onCommentButtonClick(post: Post) {
@@ -204,6 +212,8 @@ class PostsActivity : AppCompatActivity(),
         createPostPopup.visibility = View.GONE
         errorMessageTextView.visibility = View.GONE
         createPostTextView.text.clear()
+        selectedImages.clear()
+        fileNameTextView.text = getString(R.string.no_file_chosen)
 
         createPostTextView.background = ContextCompat.getDrawable(this, R.drawable.edit_text_border)
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -303,65 +313,71 @@ class PostsActivity : AppCompatActivity(),
         val imageFiles = getFilesFromUris(selectedImages)
         val images = prepareImages(imageFiles)
 
+        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
+        progressBar.visibility = View.VISIBLE
+
         val postService = ClientUtils.getPostService(token)
         val call = postService.create(contentPart, images)
 
         call.enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
                 if (response.isSuccessful) {
-                    showToast("Post created successfully")
-                    fetchPostsFromServer(token)
-                    dismissPostPopup()
+                    val post = response.body()
+                    post?.let {
+                        if (imageFiles.isNotEmpty()) {
+                            uploadImagesToFirebase(it.id, imageFiles, progressBar)
+                        } else {
+                            progressBar.visibility = View.GONE
+                            showToast("Post created successfully")
+                            fetchPostsFromServer(token)
+                            dismissPostPopup()
+                        }
+                    }
                 } else {
+                    progressBar.visibility = View.GONE
                     showValidationError("Failed to create post")
                 }
             }
 
             override fun onFailure(call: Call<Post>, t: Throwable) {
+                progressBar.visibility = View.GONE
                 showValidationError("Error: ${t.message}")
             }
         })
     }
 
-    private fun showValidationError(message: String) {
-        createPostTextView.background =
-            ContextCompat.getDrawable(this, R.drawable.border_red_square)
-        errorMessageTextView.text = message
-        errorMessageTextView.visibility = View.VISIBLE
-    }
+    private fun uploadImagesToFirebase(postId: Long, files: List<File>, progressBar: ProgressBar) {
+        val totalFiles = files.size
+        var uploadedFiles = 0
 
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
+        files.forEach { file ->
+            val fileUri = Uri.fromFile(file)
+            val imageRef = storageReference.child("post_images/$postId/${file.name}")
 
-    private fun performLogout() {
-        val userService = ClientUtils.userService
-        val call = userService.logout()
+            val uploadTask = imageRef.putFile(fileUri)
 
-        call.enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                if (response.isSuccessful) {
-                    PreferencesManager.clearToken(this@PostsActivity)
-                    val intent = Intent(this@PostsActivity, LoginActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    showToast("Logout failed: ${response.message()}")
+            uploadTask.addOnSuccessListener {
+                uploadedFiles++
+                if (uploadedFiles == totalFiles) {
+                    progressBar.visibility = View.GONE
+                    showToast("Post created successfully")
+                    fetchPostsFromServer(PreferencesManager.getToken(this)!!)
+                    dismissPostPopup()
                 }
+            }.addOnFailureListener {
+                progressBar.visibility = View.GONE
+                showToast("Upload failed: ${it.message}")
             }
-
-            override fun onFailure(call: Call<Void>, t: Throwable) {
-                showToast("Logout error: ${t.message}")
-            }
-        })
+        }
     }
 
     private fun prepareImages(files: List<File>): List<MultipartBody.Part> {
-        return files.map { file ->
+        return files.takeIf { it.isNotEmpty() }?.map { file ->
             val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
             MultipartBody.Part.createFormData("images", file.name, requestFile)
-        }
+        } ?: emptyList()
     }
+
 
     private fun chooseImages() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -392,9 +408,14 @@ class PostsActivity : AppCompatActivity(),
                 } else {
                     resources.getQuantityString(R.plurals.files_chosen_count, selectedImages.size, selectedImages.size)
                 }
+            } else {
+                fileNameTextView.text = getString(R.string.no_file_chosen)
+                selectedImages.clear()
             }
         }
     }
+
+
     private fun getFilesFromUris(uris: List<Uri>): List<File> {
         val files = mutableListOf<File>()
         uris.forEach { uri ->
@@ -404,9 +425,22 @@ class PostsActivity : AppCompatActivity(),
                 file.outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
                 }
+            } ?: run {
+                showToast("Failed to open InputStream for $fileName")
             }
             files.add(file)
         }
         return files
     }
+    private fun showValidationError(message: String) {
+        createPostTextView.background =
+            ContextCompat.getDrawable(this, R.drawable.border_red_square)
+        errorMessageTextView.text = message
+        errorMessageTextView.visibility = View.VISIBLE
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
 }

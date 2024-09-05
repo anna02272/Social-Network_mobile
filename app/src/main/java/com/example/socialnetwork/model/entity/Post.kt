@@ -1,6 +1,5 @@
 package com.example.socialnetwork.model.entity
 
-import android.media.Image
 import java.time.LocalDateTime
 
 data class Post(
