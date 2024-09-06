@@ -42,12 +42,17 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     }
 
     interface DeleteButtonClickListener {
-        fun onDeleteButtonClick()
+        fun onDeleteButtonClick(post: Post)
+    }
+
+    interface EditButtonClickListener {
+        fun onEditButtonClick(post: Post)
     }
 
     var commentButtonClickListener: CommentButtonClickListener? = null
     var reportButtonClickListener: ReportButtonClickListener? = null
     var deleteButtonClickListener: DeleteButtonClickListener? = null
+    var editButtonClickListener: EditButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
@@ -130,11 +135,11 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.edit -> {
-                    Toast.makeText(mContext, "Edit Post clicked", Toast.LENGTH_SHORT).show()
+                    editButtonClickListener?.onEditButtonClick(post)
                     true
                 }
                 R.id.delete -> {
-                    deleteButtonClickListener?.onDeleteButtonClick()
+                    deleteButtonClickListener?.onDeleteButtonClick(post)
                     true
                 }
                 R.id.report -> {

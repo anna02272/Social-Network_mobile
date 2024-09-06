@@ -161,7 +161,7 @@ class UserReportsFragment : Fragment(),
             groupAdmin = null
         )
 
-        report.reportedUser.id?.let {
+        report.reportedUser?.id?.let {
             bannedService.blockUser(it, banned).enqueue(object : Callback<Banned> {
                 override fun onResponse(call: Call<Banned>, response: Response<Banned>) {
                     if (response.isSuccessful) {

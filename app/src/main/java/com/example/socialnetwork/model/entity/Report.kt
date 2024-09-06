@@ -9,7 +9,7 @@ data class Report (
     val accepted: Boolean,
     val isDeleted: Boolean,
     val user: User,
-    val post: Post,
-    val comment: Comment,
-    val reportedUser: User
+    val post: Post?,
+    val comment: Comment?,
+    val reportedUser: User?
 )

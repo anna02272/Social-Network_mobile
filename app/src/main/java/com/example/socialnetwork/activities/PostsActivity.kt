@@ -25,9 +25,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adpters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
-import com.example.socialnetwork.fragments.ConfirmationDialogFragment
 import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Post
+import com.example.socialnetwork.model.entity.Report
+import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
@@ -41,13 +42,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.time.LocalDate
 
 
 class PostsActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
     PostAdapter.ReportButtonClickListener,
     PostAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener {
+    PostAdapter.EditButtonClickListener {
 
     private lateinit var createPostTextView: EditText
     private lateinit var dimBackgroundView: View
@@ -57,6 +59,7 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var pickImagesLauncher: ActivityResultLauncher<Intent>
     private lateinit var selectedImages: MutableList<Uri>
     private lateinit var storageReference: StorageReference
+    private var currentUser: User? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
@@ -77,9 +80,9 @@ class PostsActivity : AppCompatActivity(),
 
         showPostPopup()
 
-        fillReportSpinner()
-
         fetchPostsFromServer(token)
+
+        fetchUserData(token)
 
         initializeActivityResultLauncher()
 
@@ -111,19 +114,15 @@ class PostsActivity : AppCompatActivity(),
     }
 
     override fun onReportButtonClick(post: Post) {
-        showReportPopup()
+        showReportPopup(post)
     }
 
-    override fun onDeleteButtonClick() {
-        showConfirmationDialog()
+    override fun onDeleteButtonClick(post: Post) {
+//       deletePost(post)
     }
 
-    override fun onDialogPositiveClick() {
-        Toast.makeText(this, "Post deleted", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onDialogNegativeClick() {
-        Toast.makeText(this, "Delete canceled", Toast.LENGTH_SHORT).show()
+    override fun onEditButtonClick(post: Post) {
+//        editPost(post)
     }
 
     private fun setupBottomNavigation() {
@@ -220,10 +219,11 @@ class PostsActivity : AppCompatActivity(),
         imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
     }
 
-    private fun showReportPopup() {
+    private fun showReportPopup(post: Post) {
         val reportPopup = findViewById<RelativeLayout>(R.id.createReportPopup)
         val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
         val closeButton = findViewById<ImageView>(R.id.closeReportPopupButton)
+        val createButton = findViewById<Button>(R.id.popupCreateReportButton)
 
         reportPopup.visibility = View.VISIBLE
         dimBackgroundView.visibility = View.VISIBLE
@@ -237,6 +237,12 @@ class PostsActivity : AppCompatActivity(),
             reportPopup.visibility = View.GONE
             dimBackgroundView.visibility = View.GONE
         }
+
+        fillReportSpinner()
+
+        createButton.setOnClickListener {
+            submitReport(post)
+        }
     }
 
     private fun fillReportSpinner() {
@@ -248,13 +254,8 @@ class PostsActivity : AppCompatActivity(),
 
         val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
         reasonSpinner.adapter = spinnerAdapter
-    }
 
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_delete_post))
-        dialog.listener = this
-        dialog.show(supportFragmentManager, "ConfirmationDialog")
+        reasonSpinner.setSelection(0)
     }
 
     private fun fetchPostsFromServer(token: String) {
@@ -283,6 +284,27 @@ class PostsActivity : AppCompatActivity(),
         })
     }
 
+    private fun fetchUserData(token: String) {
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.whoAmI()
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                } else {
+                    showToast("Failed to load user data")
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
+    }
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(this)
         val intent = Intent(this, LoginActivity::class.java)
@@ -432,6 +454,49 @@ class PostsActivity : AppCompatActivity(),
         }
         return files
     }
+    private fun submitReport(post: Post) {
+        val token = PreferencesManager.getToken(this) ?: return
+        val reportService = ClientUtils.getReportService(token)
+        val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
+        val selectedReason = reasonSpinner.selectedItem.toString()
+        val reason = EReportReason.valueOf(selectedReason.replace(' ', '_'))
+
+        val report = currentUser?.let {
+            Report(
+                id = 0,
+                reason = reason,
+                timestamp = LocalDate.now(),
+                accepted = false,
+                isDeleted = false,
+                user = it,
+                post = post,
+                comment = null,
+                reportedUser = null
+            )
+        }
+
+        post.id?.let { postId ->
+            if (report != null) {
+                reportService.reportPost(postId, report).enqueue(object : Callback<Report> {
+                    override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                        if (response.isSuccessful) {
+                            showToast("Report submitted successfully")
+
+                            findViewById<RelativeLayout>(R.id.createReportPopup).visibility = View.GONE
+                            findViewById<View>(R.id.dimBackgroundView).visibility = View.GONE
+                        } else {
+                            showToast("Failed to submit report: ${response.message()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Report>, t: Throwable) {
+                        showToast("Error: ${t.message}")
+                    }
+                })
+            }
+        }
+    }
+
     private fun showValidationError(message: String) {
         createPostTextView.background =
             ContextCompat.getDrawable(this, R.drawable.border_red_square)
