@@ -1,5 +1,6 @@
 package com.example.socialnetwork.adpters
 
+import ImagePagerAdapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +11,7 @@ import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Post
 import com.google.firebase.FirebaseApp
@@ -20,19 +21,20 @@ import java.time.format.DateTimeFormatter
 
 class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     ArrayAdapter<Post?>(mContext, 0, posts as List<Post?>) {
-    private val mPosts: ArrayList<Post>
+    private val mPosts: ArrayList<Post> = ArrayList(posts)
     private lateinit var storageReference: StorageReference
 
     init {
-        mPosts = ArrayList(posts)
         initializeFirebaseStorage()
     }
 
     private fun initializeFirebaseStorage() {
-        FirebaseApp.initializeApp(context)
-        val firebaseStorage = FirebaseStorage.getInstance()
-        storageReference = firebaseStorage.reference
+        if (FirebaseApp.getApps(mContext).isEmpty()) {
+            FirebaseApp.initializeApp(mContext)
+        }
+        storageReference = FirebaseStorage.getInstance().reference
     }
+
     interface CommentButtonClickListener {
         fun onCommentButtonClick(post: Post)
     }
@@ -55,50 +57,54 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     var editButtonClickListener: EditButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var view = convertView
+        val view: View
+        val viewHolder: ViewHolder
+
+        if (convertView == null) {
+            view = LayoutInflater.from(mContext).inflate(R.layout.fragment_post, parent, false)
+            viewHolder = ViewHolder(view)
+            view.tag = viewHolder
+        } else {
+            view = convertView
+            viewHolder = view.tag as ViewHolder
+        }
+
         val post: Post? = getItem(position)
-
-        if (view == null) {
-            view =
-                LayoutInflater.from(context).inflate(R.layout.fragment_post, parent, false)
-        }
-
-        val profileImage = view!!.findViewById<ImageView>(R.id.profileImage)
-        val usernameTextView = view.findViewById<TextView>(R.id.usernameTextView)
-        val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
-        val contentTextView = view.findViewById<TextView>(R.id.contentTextView)
-        val commentButton = view.findViewById<ImageButton>(R.id.commentButton)
-        val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
-        val viewPager = view.findViewById<ViewPager>(R.id.viewPager)
-
-        post?.let { it ->
-//            profileImage.setImageResource(it.user.image)
-            usernameTextView.text = it.user?.profileName?.takeIf { it.isNotEmpty() } ?: it.user?.username
-            val formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")
-            dateTextView.text = it.creationDate.format(formatter)
-            contentTextView.text = it.content
-
-            viewPager.adapter = null
-            loadPostImages(it.id, viewPager)
-        }
-
-        commentButton.setOnClickListener {
-            post?.let {
-                commentButtonClickListener?.onCommentButtonClick(it)
-            }
-        }
-
-        moreOptionsButton.setOnClickListener { view ->
-            post?.let {
-                showPopupMenu(view, it)
-            }
+        post?.let {
+            viewHolder.bind(it)
         }
 
         return view
     }
-    private fun loadPostImages(postId: Long, viewPager: ViewPager) {
-        val imageFolderRef = storageReference.child("post_images/$postId/")
 
+    inner class ViewHolder(view: View) {
+        private val profileImage: ImageView = view.findViewById(R.id.profileImage)
+        private val usernameTextView: TextView = view.findViewById(R.id.usernameTextView)
+        private val dateTextView: TextView = view.findViewById(R.id.dateTextView)
+        private val contentTextView: TextView = view.findViewById(R.id.contentTextView)
+        private val commentButton: ImageButton = view.findViewById(R.id.commentButton)
+        private val moreOptionsButton: ImageButton = view.findViewById(R.id.moreOptionsButton)
+        private val viewPager: ViewPager2 = view.findViewById(R.id.viewPager)
+
+        fun bind(post: Post) {
+            // Load profile image
+            usernameTextView.text = post.user?.profileName?.takeIf { it.isNotEmpty() } ?: post.user?.username
+            dateTextView.text = post.creationDate.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+            contentTextView.text = post.content
+
+            loadPostImages(post.id, viewPager)
+
+            commentButton.setOnClickListener {
+                commentButtonClickListener?.onCommentButtonClick(post)
+            }
+
+            moreOptionsButton.setOnClickListener {
+                showPopupMenu(it, post)
+            }
+        }
+    }
+    private fun loadPostImages(postId: Long, viewPager: ViewPager2) {
+        val imageFolderRef = storageReference.child("post_images/$postId/")
         imageFolderRef.listAll()
             .addOnSuccessListener { listResult ->
                 val imageUrls = mutableListOf<String>()
@@ -111,7 +117,8 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                         item.downloadUrl.addOnSuccessListener { uri ->
                             imageUrls.add(uri.toString())
                             if (index == imageItems - 1) {
-                                viewPager.adapter = ImagePagerAdapter(mContext, imageUrls)
+                                val adapter = ImagePagerAdapter(mContext, imageUrls)
+                                viewPager.adapter = adapter
                                 viewPager.visibility = View.VISIBLE
                             }
                         }.addOnFailureListener {
@@ -124,6 +131,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                 showToast("Failed to list images: ${it.message}")
             }
     }
+
     private fun showPopupMenu(view: View, post: Post) {
         val popup = PopupMenu(mContext, view)
 

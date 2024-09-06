@@ -75,10 +75,15 @@
         android:textSize="16sp"
         android:padding="8dp"/>
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewPager"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="380dp" />
+        android:layout_height="wrap_content">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="380dp"/>
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"

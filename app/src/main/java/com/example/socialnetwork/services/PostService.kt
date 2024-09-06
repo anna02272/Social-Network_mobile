@@ -31,10 +31,6 @@ interface PostService {
     ): Call<Post>
 
 
-    @Headers(
-        "User-Agent: Mobile-Android",
-        "Content-Type: application/json"
-    )
     @Multipart
     @POST("posts/create/{id}")
     fun createGroupPost(
@@ -43,10 +39,6 @@ interface PostService {
         @Part images: List<MultipartBody.Part>? = null
     ): Call<Post>
 
-    @Headers(
-        "User-Agent: Mobile-Android",
-        "Content-Type: application/json"
-    )
     @Multipart
     @PUT("posts/update/{id}")
     fun update(

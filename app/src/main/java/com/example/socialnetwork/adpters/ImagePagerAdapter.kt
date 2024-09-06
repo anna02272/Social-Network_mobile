@@ -1,33 +1,34 @@
-package com.example.socialnetwork.adpters
-
 import android.content.Context
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.viewpager.widget.PagerAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.example.socialnetwork.R
 import com.squareup.picasso.Picasso
 
-class ImagePagerAdapter(private val context: Context, private val imageUrls: List<String>) : PagerAdapter() {
+class ImagePagerAdapter(
+    private val context: Context,
+    private var imageUrls: List<String>
+) : RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder>() {
 
-    override fun getCount(): Int = imageUrls.size
-
-    override fun isViewFromObject(view: View, `object`: Any): Boolean = view == `object`
-
-    override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        val imageView = ImageView(context)
-        imageView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        imageView.scaleType = ImageView.ScaleType.CENTER_CROP
-
-        Picasso.get().load(imageUrls[position]).into(imageView)
-
-        container.addView(imageView)
-        return imageView
+    inner class ImageViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val imageView: ImageView = view.findViewById(R.id.imageView)
     }
 
-    override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        container.removeView(`object` as View)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
+        val view = LayoutInflater.from(context).inflate(R.layout.item_image, parent, false)
+        return ImageViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
+        Picasso.get().load(imageUrls[position]).into(holder.imageView)
+    }
+
+    override fun getItemCount(): Int = imageUrls.size
+
+    fun updateImages(newImageUrls: List<String>) {
+        imageUrls = newImageUrls
+        notifyDataSetChanged()
     }
 }

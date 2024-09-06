@@ -3,8 +3,11 @@ package com.example.socialnetwork.activities
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -42,6 +45,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
 import java.time.LocalDate
 
 
@@ -51,13 +55,17 @@ class PostsActivity : AppCompatActivity(),
     PostAdapter.DeleteButtonClickListener,
     PostAdapter.EditButtonClickListener {
 
-    private lateinit var createPostTextView: EditText
-    private lateinit var dimBackgroundView: View
-    private lateinit var createPostPopup: RelativeLayout
+    private lateinit var createPostTextView: TextView
+    private lateinit var popupPostEditText: EditText
     private lateinit var errorMessageTextView: TextView
     private lateinit var fileNameTextView: TextView
+    private lateinit var dimBackgroundView : View
+    private lateinit var createPostPopup: RelativeLayout
+    private lateinit var closePopupButton: ImageView
+    private lateinit var popupCreatePostButton: Button
     private lateinit var pickImagesLauncher: ActivityResultLauncher<Intent>
     private lateinit var selectedImages: MutableList<Uri>
+    private lateinit var progressBar: ProgressBar
     private lateinit var storageReference: StorageReference
     private var currentUser: User? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,24 +86,39 @@ class PostsActivity : AppCompatActivity(),
 
         setupBottomNavigation()
 
-        showPostPopup()
-
         fetchPostsFromServer(token)
 
         fetchUserData(token)
 
         initializeActivityResultLauncher()
 
+        initializeViews()
+
+    }
+
+    private fun initializeViews(){
+        fileNameTextView = findViewById(R.id.fileNameTextView)
+        createPostTextView =  findViewById(R.id.createPostTextView)
+        popupPostEditText = findViewById(R.id.popupPostEditText)
+        errorMessageTextView = findViewById(R.id.post_error_message)
+        dimBackgroundView = findViewById(R.id.dimBackgroundView)
+        createPostPopup = findViewById(R.id.createPostPopup)
+        closePopupButton = findViewById(R.id.closePostPopupButton)
+        popupCreatePostButton = findViewById(R.id.popupCreatePostButton)
+        selectedImages = mutableListOf()
+        progressBar = findViewById(R.id.progressBar)
+
         findViewById<Button>(R.id.sort).setOnClickListener {
 
+        }
+
+        findViewById<Button>(R.id.createPostButton).setOnClickListener {
+            showPostPopup()
         }
 
         findViewById<Button>(R.id.chooseFileButton).setOnClickListener {
             chooseImages()
         }
-
-        fileNameTextView = findViewById(R.id.fileNameTextView)
-
     }
 
     private fun initializeFirebaseStorage() {
@@ -122,7 +145,7 @@ class PostsActivity : AppCompatActivity(),
     }
 
     override fun onEditButtonClick(post: Post) {
-//        editPost(post)
+        showPostPopup(post)
     }
 
     private fun setupBottomNavigation() {
@@ -182,46 +205,60 @@ class PostsActivity : AppCompatActivity(),
         }
     }
 
-    private fun showPostPopup() {
-        val createPostButton = findViewById<Button>(R.id.createPostButton)
-        createPostTextView = findViewById(R.id.popupPostEditText)
-        dimBackgroundView = findViewById(R.id.dimBackgroundView)
-        createPostPopup = findViewById(R.id.createPostPopup)
-        val closePopupButton = findViewById<ImageView>(R.id.closePostPopupButton)
-        val popupCreatePostButton = findViewById<Button>(R.id.popupCreatePostButton)
-        errorMessageTextView = findViewById(R.id.post_error_message)
+    private fun showPostPopup(post: Post? = null) {
 
-
-        createPostButton.setOnClickListener {
-            dimBackgroundView.visibility = View.VISIBLE
-            createPostPopup.visibility = View.VISIBLE
+        createPostTextView.text = if (post == null) {
+            getString(R.string.create_post)
+        } else {
+            getString(R.string.edit_post)
         }
+
+        popupCreatePostButton.text = if (post == null) {
+            getString(R.string.create_post)
+        } else {
+            getString(R.string.edit_post)
+        }
+
+        if (post != null) {
+            popupPostEditText.setText(post.content)
+            // Load and display images with remove functionality
+            // Set up removeImageView to handle image removal
+        } else {
+            popupPostEditText.text.clear()
+            // Clear images if any
+        }
+
+        dimBackgroundView.visibility = View.VISIBLE
+        createPostPopup.visibility = View.VISIBLE
 
         closePopupButton.setOnClickListener {
             dismissPostPopup()
         }
 
         popupCreatePostButton.setOnClickListener {
-            handleCreatePost()
+            if (post == null) {
+                handleCreatePost()
+            } else {
+                handleEditPost(post.id)
+            }
         }
     }
 
     private fun dismissPostPopup() {
         dimBackgroundView.visibility = View.GONE
         createPostPopup.visibility = View.GONE
+        popupPostEditText.text.clear()
         errorMessageTextView.visibility = View.GONE
-        createPostTextView.text.clear()
         selectedImages.clear()
         fileNameTextView.text = getString(R.string.no_file_chosen)
 
-        createPostTextView.background = ContextCompat.getDrawable(this, R.drawable.edit_text_border)
+        popupPostEditText.background = ContextCompat.getDrawable(this, R.drawable.edit_text_border)
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(createPostPopup.windowToken, 0)
     }
 
     private fun showReportPopup(post: Post) {
         val reportPopup = findViewById<RelativeLayout>(R.id.createReportPopup)
-        val dimBackgroundView = findViewById<View>(R.id.dimBackgroundView)
         val closeButton = findViewById<ImageView>(R.id.closeReportPopupButton)
         val createButton = findViewById<Button>(R.id.popupCreateReportButton)
 
@@ -284,6 +321,15 @@ class PostsActivity : AppCompatActivity(),
         })
     }
 
+    private fun updateListView(posts: ArrayList<Post>) {
+        val listView: ListView = findViewById(R.id.postsListView)
+        val adapter = PostAdapter(this, posts)
+        adapter.commentButtonClickListener = this
+        adapter.reportButtonClickListener = this
+        adapter.deleteButtonClickListener = this
+        adapter.editButtonClickListener = this
+        listView.adapter = adapter
+    }
     private fun fetchUserData(token: String) {
         val userService = ClientUtils.getUserService(token)
         val call = userService.whoAmI()
@@ -296,7 +342,6 @@ class PostsActivity : AppCompatActivity(),
                         currentUser = user
                     }
                 } else {
-                    showToast("Failed to load user data")
                 }
             }
 
@@ -312,18 +357,9 @@ class PostsActivity : AppCompatActivity(),
         finish()
     }
 
-    private fun updateListView(posts: ArrayList<Post>) {
-        val listView: ListView = findViewById(R.id.postsListView)
-        val adapter = PostAdapter(this, posts)
-        adapter.commentButtonClickListener = this
-        adapter.reportButtonClickListener = this
-        adapter.deleteButtonClickListener = this
-        listView.adapter = adapter
-    }
-
     private fun handleCreatePost() {
         val token = PreferencesManager.getToken(this) ?: return
-        val postContent = createPostTextView.text.toString().trim()
+        val postContent = popupPostEditText.text.toString().trim()
 
         if (postContent.isEmpty()) {
             showValidationError("Post content cannot be empty")
@@ -335,7 +371,6 @@ class PostsActivity : AppCompatActivity(),
         val imageFiles = getFilesFromUris(selectedImages)
         val images = prepareImages(imageFiles)
 
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
         progressBar.visibility = View.VISIBLE
 
         val postService = ClientUtils.getPostService(token)
@@ -358,6 +393,49 @@ class PostsActivity : AppCompatActivity(),
                 } else {
                     progressBar.visibility = View.GONE
                     showValidationError("Failed to create post")
+                }
+            }
+
+            override fun onFailure(call: Call<Post>, t: Throwable) {
+                progressBar.visibility = View.GONE
+                showValidationError("Error: ${t.message}")
+            }
+        })
+    }
+    private fun handleEditPost(postId: Long) {
+        val token = PreferencesManager.getToken(this) ?: return
+        val postContent = popupPostEditText.text.toString().trim()
+
+        if (postContent.isEmpty()) {
+            showValidationError("Post content cannot be empty")
+            return
+        }
+
+        val imageFiles = getFilesFromUris(selectedImages)
+        val images = prepareImages(imageFiles)
+
+        progressBar.visibility = View.VISIBLE
+
+        val postService = ClientUtils.getPostService(token)
+        val call = postService.update(postId, postContent, images)
+
+        call.enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (response.isSuccessful) {
+                    val post = response.body()
+                    post?.let {
+                        if (imageFiles.isNotEmpty()) {
+                            uploadImagesToFirebase(it.id, imageFiles, progressBar)
+                        } else {
+                            progressBar.visibility = View.GONE
+                            showToast("Post updated successfully")
+                            fetchPostsFromServer(token)
+                            dismissPostPopup()
+                        }
+                    }
+                } else {
+                    progressBar.visibility = View.GONE
+                    showValidationError("Failed to update post")
                 }
             }
 
@@ -400,7 +478,6 @@ class PostsActivity : AppCompatActivity(),
         } ?: emptyList()
     }
 
-
     private fun chooseImages() {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "image/*"
@@ -437,22 +514,28 @@ class PostsActivity : AppCompatActivity(),
         }
     }
 
-
     private fun getFilesFromUris(uris: List<Uri>): List<File> {
         val files = mutableListOf<File>()
         uris.forEach { uri ->
             val fileName = uri.lastPathSegment ?: "temp_image"
             val file = File(cacheDir, fileName)
+
             contentResolver.openInputStream(uri)?.use { inputStream ->
-                file.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+                val bitmap = BitmapFactory.decodeStream(inputStream)
+                val compressedFile = compressBitmapToFile(bitmap, file)
+                files.add(compressedFile)
             } ?: run {
                 showToast("Failed to open InputStream for $fileName")
             }
-            files.add(file)
         }
         return files
+    }
+    private fun compressBitmapToFile(bitmap: Bitmap, file: File): File {
+        val outputStream = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+        outputStream.flush()
+        outputStream.close()
+        return file
     }
 
     private fun deletePost(post: Post){
@@ -504,7 +587,7 @@ class PostsActivity : AppCompatActivity(),
                             showToast("Report submitted successfully")
 
                             findViewById<RelativeLayout>(R.id.createReportPopup).visibility = View.GONE
-                            findViewById<View>(R.id.dimBackgroundView).visibility = View.GONE
+                            dimBackgroundView.visibility = View.GONE
                         } else {
                             showToast("Failed to submit report: ${response.message()}")
                         }
@@ -519,7 +602,7 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun showValidationError(message: String) {
-        createPostTextView.background =
+        popupPostEditText.background =
             ContextCompat.getDrawable(this, R.drawable.border_red_square)
         errorMessageTextView.text = message
         errorMessageTextView.visibility = View.VISIBLE
