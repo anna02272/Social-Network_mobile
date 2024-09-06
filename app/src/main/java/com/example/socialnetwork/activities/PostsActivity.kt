@@ -118,7 +118,7 @@ class PostsActivity : AppCompatActivity(),
     }
 
     override fun onDeleteButtonClick(post: Post) {
-//       deletePost(post)
+       deletePost(post)
     }
 
     override fun onEditButtonClick(post: Post) {
@@ -453,6 +453,27 @@ class PostsActivity : AppCompatActivity(),
             files.add(file)
         }
         return files
+    }
+
+    private fun deletePost(post: Post){
+        val token = PreferencesManager.getToken(this) ?: return
+        val postService = ClientUtils.getPostService(token)
+
+        post.id?.let { postId ->
+            postService.delete(postId).enqueue(object : Callback<Post> {
+                override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                    if (response.isSuccessful) {
+                        showToast("Post deleted successfully")
+                        fetchPostsFromServer(token)
+                    } else {
+                        showToast("Failed to delete post: ${response.message()}")
+                    }
+                }
+                override fun onFailure(call: Call<Post>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+        }
     }
     private fun submitReport(post: Post) {
         val token = PreferencesManager.getToken(this) ?: return
