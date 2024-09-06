@@ -18,7 +18,7 @@ class BannedAdapter(
     ArrayAdapter<Banned>(context, R.layout.fragment_report, bannedUsers) {
 
     interface AcceptButtonClickListener {
-        fun onAcceptButtonClick()
+        fun onAcceptButtonClick(bannedId: Long)
     }
 
     var acceptButtonClickListener: AcceptButtonClickListener? = null
@@ -61,7 +61,7 @@ class BannedAdapter(
         }
         acceptButton.setOnClickListener {
             bannedUsers?.let {
-                acceptButtonClickListener?.onAcceptButtonClick()
+                it.id?.let { it1 -> acceptButtonClickListener?.onAcceptButtonClick(it1) }
             }
         }
 

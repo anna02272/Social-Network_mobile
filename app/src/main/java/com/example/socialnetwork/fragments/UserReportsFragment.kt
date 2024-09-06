@@ -12,16 +12,19 @@ import com.example.socialnetwork.R
 import com.example.socialnetwork.activities.LoginActivity
 import com.example.socialnetwork.adpters.ReportAdapter
 import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.Banned
 import com.example.socialnetwork.model.entity.Report
+import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.PreferencesManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.LocalDate
 
 class UserReportsFragment : Fragment(),
     ReportAdapter.AcceptButtonClickListener,
-    ReportAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener {
+    ReportAdapter.DeleteButtonClickListener{
+    private lateinit var currentUser: User
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,8 +39,31 @@ class UserReportsFragment : Fragment(),
             return view
         }
         fetchReportsFromServer(token)
+        fetchUserData(token)
 
         return view
+    }
+
+    private fun fetchUserData(token: String) {
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.whoAmI()
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                } else {
+                    showToast("Failed to load user data")
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
 
     private fun fetchReportsFromServer(token: String) {
@@ -90,32 +116,88 @@ class UserReportsFragment : Fragment(),
         listView.adapter = adapter
     }
 
-    override fun onAcceptButtonClick() {
-        showConfirmationDialog()
+    override fun onDeleteButtonClick(reportId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val reportService = ClientUtils.getReportService(token)
+
+        reportService.declineReport(reportId).enqueue(object : Callback<Report> {
+            override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                if (response.isSuccessful) {
+                    showToast("Report is deleted")
+                    fetchReportsFromServer(token)
+                } else {
+                    showToast("Failed to decline report")
+                }
+            }
+
+            override fun onFailure(call: Call<Report>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
 
-    override fun onDeleteButtonClick() {
-        showDeleteConfirmationDialog()
-    }
-    override fun onDialogPositiveClick() {
-        showToast("User is blocked or request deleted")
+    override fun onAcceptButtonClick(report: Report) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+
+        blockUser(report, token) { isBlocked ->
+            if (isBlocked) {
+                approveReport(report, token)
+            } else {
+                showToast("Failed to block user")
+            }
+        }
     }
 
-    override fun onDialogNegativeClick() {
-        showToast("Delete canceled")
-    }
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_block))
-        dialog.listener = this
-        dialog.show(parentFragmentManager, "ConfirmationDialog")
+    private fun blockUser(report: Report, token: String, callback: (Boolean) -> Unit) {
+        val bannedService = ClientUtils.getBannedService(token)
+
+        val banned = Banned(
+            id = 0,
+            timeStamp = LocalDate.now(),
+            isBlocked = true,
+            bannedUser = report.reportedUser,
+            user = currentUser,
+            group = null,
+            groupAdmin = null
+        )
+
+        report.reportedUser.id?.let {
+            bannedService.blockUser(it, banned).enqueue(object : Callback<Banned> {
+                override fun onResponse(call: Call<Banned>, response: Response<Banned>) {
+                    if (response.isSuccessful) {
+                        showToast("User is blocked")
+                        callback(true)
+                    } else {
+                        callback(false)
+                    }
+                }
+
+                override fun onFailure(call: Call<Banned>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                    callback(false)
+                }
+            })
+        } ?: callback(false)
     }
 
-    private fun showDeleteConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_delete_user_report))
-        dialog.listener = this
-        dialog.show(parentFragmentManager, "ConfirmationDialog")
+    private fun approveReport(report: Report, token: String) {
+        val reportService = ClientUtils.getReportService(token)
+
+        report.id?.let {
+            reportService.approveReport(it).enqueue(object : Callback<Report> {
+                override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                    if (response.isSuccessful) {
+                        fetchReportsFromServer(token)
+                    } else {
+                        showToast("Failed to approve report")
+                    }
+                }
+
+                override fun onFailure(call: Call<Report>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+        }
     }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

@@ -1,8 +1,11 @@
 package com.example.socialnetwork.utils
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
 import java.time.LocalDateTime
 
@@ -20,3 +23,15 @@ class LocalDateTimeDeserializer : JsonDeserializer<LocalDateTime> {
     }
 }
 
+class LocalDateTimeSerializer : JsonSerializer<LocalDateTime> {
+    override fun serialize(src: LocalDateTime, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+        return JsonArray().apply {
+            add(src.year)
+            add(src.monthValue)
+            add(src.dayOfMonth)
+            add(src.hour)
+            add(src.minute)
+            add(src.second)
+        }
+    }
+}

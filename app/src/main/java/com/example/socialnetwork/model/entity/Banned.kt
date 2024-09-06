@@ -3,11 +3,11 @@ package com.example.socialnetwork.model.entity
 import java.time.LocalDate
 
 data class Banned(
-    val id: Long?,
-    val timeStamp: LocalDate,
-    val isBlocked: Boolean,
+    var id: Long?,
+    var timeStamp: LocalDate,
+    var isBlocked: Boolean,
     val groupAdmin: GroupAdmin?,
     val group: Group?,
-    val bannedUser: User?,
-    val user: User?
+    var bannedUser: User?,
+    var user: User?
 )

@@ -21,10 +21,10 @@ import retrofit2.Response
 
 class FriendRequestsFragment : Fragment(),
     FriendRequestAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener,
     FriendRequestAdapter.AcceptButtonClickListener {
 
     private var userId: Long? = null
+    private var token: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,7 +32,7 @@ class FriendRequestsFragment : Fragment(),
     ): View? {
         val view = inflater.inflate(R.layout.fragment_friend_requests, container, false)
 
-        val token = PreferencesManager.getToken(requireContext())
+        token = PreferencesManager.getToken(requireContext())
         if (token == null) {
             val intent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(intent)
@@ -40,7 +40,7 @@ class FriendRequestsFragment : Fragment(),
             return view
         }
 
-        fetchUserData(token)
+        fetchUserData(token!!)
 
         return view
     }
@@ -76,10 +76,13 @@ class FriendRequestsFragment : Fragment(),
         requireActivity().finish()
     }
     private fun updateListView(friendRequests: List<FriendRequest>) {
+        val filteredFriendRequests = friendRequests.filter { friendRequest ->
+            friendRequest.at == null
+        }
         val listView: ListView = requireView().findViewById(R.id.friendRequestsListView)
         val adapter = FriendRequestAdapter(
             requireContext(),
-            ArrayList(friendRequests),
+            ArrayList(filteredFriendRequests),
             getString(R.string.accept),
             getString(R.string.delete_request)
         )
@@ -111,25 +114,44 @@ class FriendRequestsFragment : Fragment(),
             }
         })
     }
-    override fun onDeleteButtonClick() {
-        showConfirmationDialog()
+    override fun onDeleteButtonClick(friendRequestId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val friendRequestService = ClientUtils.getFriendRequestService(token)
+
+        friendRequestService.decline(friendRequestId).enqueue(object : Callback<FriendRequest> {
+            override fun onResponse(call: Call<FriendRequest>, response: Response<FriendRequest>) {
+                if (response.isSuccessful) {
+                    showToast("Friend request declined")
+                    userId?.let { fetchFriendRequestsFromServer(token, it) }
+                } else {
+                    showToast("Failed to decline friend request")
+                }
+            }
+
+            override fun onFailure(call: Call<FriendRequest>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
 
-    override fun onAcceptButtonClick() {
-        TODO("Not yet implemented")
-    }
-    override fun onDialogPositiveClick() {
-        Toast.makeText(requireContext(),  "Friend Request deleted", Toast.LENGTH_SHORT).show()
-    }
+    override fun onAcceptButtonClick(friendRequestId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val friendRequestService = ClientUtils.getFriendRequestService(token)
 
-    override fun onDialogNegativeClick() {
-        Toast.makeText(requireContext(), "Delete canceled", Toast.LENGTH_SHORT).show()
-    }
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_delete_friend_request))
-        dialog.listener = this
-        dialog.show(parentFragmentManager, "ConfirmationDialog")
+        friendRequestService.approve(friendRequestId).enqueue(object : Callback<FriendRequest> {
+            override fun onResponse(call: Call<FriendRequest>, response: Response<FriendRequest>) {
+                if (response.isSuccessful) {
+                    showToast("Friend request approved")
+                    userId?.let { fetchFriendRequestsFromServer(token, it) }
+                } else {
+                    showToast("Failed to approve friend request")
+                }
+            }
+
+            override fun onFailure(call: Call<FriendRequest>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

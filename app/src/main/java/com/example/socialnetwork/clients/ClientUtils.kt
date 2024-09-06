@@ -12,9 +12,13 @@ import com.example.socialnetwork.services.ReactionService
 import com.example.socialnetwork.services.ReportService
 import com.example.socialnetwork.services.UserService
 import com.example.socialnetwork.utils.LocalDateDeserializer
+import com.example.socialnetwork.utils.LocalDateSerializer
 import com.example.socialnetwork.utils.LocalDateTimeDeserializer
+import com.example.socialnetwork.utils.LocalDateTimeSerializer
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializer
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -55,7 +59,9 @@ object ClientUtils {
         GsonBuilder()
             .setLenient()
             .registerTypeAdapter(LocalDate::class.java, LocalDateDeserializer())
+            .registerTypeAdapter(LocalDate::class.java, LocalDateSerializer())
             .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeDeserializer())
+            .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeSerializer())
             .create()
     }
 

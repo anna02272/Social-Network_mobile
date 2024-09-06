@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import com.example.socialnetwork.R
+import com.example.socialnetwork.model.entity.Banned
 import com.example.socialnetwork.model.entity.Report
 
 class ReportAdapter(
@@ -21,11 +22,10 @@ class ReportAdapter(
     ArrayAdapter<Report>(context, R.layout.fragment_report, reports) {
 
     interface AcceptButtonClickListener {
-        fun onAcceptButtonClick()
+        fun onAcceptButtonClick(report: Report)
     }
     interface DeleteButtonClickListener {
-        fun onDeleteButtonClick()
-//        fun onDeleteButtonClick(report: Report, position: Int)
+        fun onDeleteButtonClick(reportId: Long)
     }
 
     var acceptButtonClickListener: AcceptButtonClickListener? = null
@@ -100,14 +100,13 @@ class ReportAdapter(
         }
         acceptButton.setOnClickListener {
             report?.let {
-                acceptButtonClickListener?.onAcceptButtonClick()
-//                acceptButtonClickListener?.onAcceptButtonClick(it, position)
+                it.let { acceptButtonClickListener?.onAcceptButtonClick(it) }
             }
         }
 
         deleteButton.setOnClickListener {
             report?.let {
-                deleteButtonClickListener?.onDeleteButtonClick()
+                it.id?.let { it1 -> deleteButtonClickListener?.onDeleteButtonClick(it1) }
             }
         }
 

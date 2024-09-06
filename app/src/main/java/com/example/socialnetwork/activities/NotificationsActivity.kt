@@ -89,4 +89,5 @@ class NotificationsActivity : AppCompatActivity() {
         }.attach()
 
     }
+
 }

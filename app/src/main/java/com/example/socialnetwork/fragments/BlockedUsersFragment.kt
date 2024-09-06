@@ -19,15 +19,15 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class BlockedUsersFragment : Fragment(),
-    BannedAdapter.AcceptButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener {
+    BannedAdapter.AcceptButtonClickListener{
+        private var token: String? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_blocked_users, container, false)
 
-        val token = PreferencesManager.getToken(requireContext())
+        token = PreferencesManager.getToken(requireContext())
         if (token == null) {
             val intent = Intent(requireContext(), LoginActivity::class.java)
             startActivity(intent)
@@ -35,7 +35,7 @@ class BlockedUsersFragment : Fragment(),
             return view
         }
 
-        fetchBlockedUsersFromServer(token)
+        fetchBlockedUsersFromServer(token!!)
 
         return view
     }
@@ -63,7 +63,6 @@ class BlockedUsersFragment : Fragment(),
             }
         })
     }
-
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(requireContext())
         val intent = Intent(requireContext(), LoginActivity::class.java)
@@ -82,22 +81,26 @@ class BlockedUsersFragment : Fragment(),
         listView.adapter = adapter
     }
 
-    override fun onAcceptButtonClick() {
-        showConfirmationDialog()
-    }
-    override fun onDialogPositiveClick() {
-        Toast.makeText(requireContext(),  "User is unblocked", Toast.LENGTH_SHORT).show()
+    override fun onAcceptButtonClick(bannedId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val bannedService = ClientUtils.getBannedService(token)
+
+        bannedService.unblockUser(bannedId).enqueue(object : Callback<Banned> {
+            override fun onResponse(call: Call<Banned>, response: Response<Banned>) {
+                if (response.isSuccessful) {
+                    showToast("User unblocked")
+                    fetchBlockedUsersFromServer(token)
+                } else {
+                    showToast("Failed to unblock user")
+                }
+            }
+
+            override fun onFailure(call: Call<Banned>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
 
-    override fun onDialogNegativeClick() {
-        Toast.makeText(requireContext(), "Unblocking canceled", Toast.LENGTH_SHORT).show()
-    }
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_unblock))
-        dialog.listener = this
-        dialog.show(parentFragmentManager, "ConfirmationDialog")
-    }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }

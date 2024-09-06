@@ -19,10 +19,10 @@ class FriendRequestAdapter(
     ArrayAdapter<FriendRequest>(context, R.layout.fragment_report, friendRequest) {
 
     interface AcceptButtonClickListener {
-        fun onAcceptButtonClick()
+        fun onAcceptButtonClick(friendRequestId: Long)
     }
     interface DeleteButtonClickListener {
-        fun onDeleteButtonClick()
+        fun onDeleteButtonClick(friendRequestId: Long)
     }
 
     var acceptButtonClickListener: AcceptButtonClickListener? = null
@@ -69,13 +69,13 @@ class FriendRequestAdapter(
         }
         acceptButton.setOnClickListener {
             friendRequest?.let {
-                acceptButtonClickListener?.onAcceptButtonClick()
+                it.id?.let { it1 -> acceptButtonClickListener?.onAcceptButtonClick(it1) }
             }
         }
 
         deleteButton.setOnClickListener {
             friendRequest?.let {
-                deleteButtonClickListener?.onDeleteButtonClick()
+                it.id?.let { it1 -> deleteButtonClickListener?.onDeleteButtonClick(it1) }
             }
         }
 

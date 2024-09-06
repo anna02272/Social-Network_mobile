@@ -2,7 +2,6 @@ package com.example.socialnetwork.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +20,7 @@ import retrofit2.Response
 
 class CommentReportsFragment : Fragment(),
     ReportAdapter.DeleteButtonClickListener,
-    ConfirmationDialogFragment.ConfirmationDialogListener, ReportAdapter.AcceptButtonClickListener {
+    ReportAdapter.AcceptButtonClickListener {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -91,26 +90,48 @@ class CommentReportsFragment : Fragment(),
         listView.adapter = adapter
     }
 
-    override fun onDeleteButtonClick() {
-        showConfirmationDialog()
-    }
-    override fun onDialogPositiveClick() {
-        Toast.makeText(requireContext(),  "Request is deleted", Toast.LENGTH_SHORT).show()
+    override fun onDeleteButtonClick(reportId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val reportService = ClientUtils.getReportService(token)
+
+        reportService.declineReport(reportId).enqueue(object : Callback<Report> {
+            override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                if (response.isSuccessful) {
+                    showToast("Report is deleted")
+                    fetchReportsFromServer(token)
+                } else {
+                    showToast("Failed to decline report")
+                }
+            }
+
+            override fun onFailure(call: Call<Report>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
 
-    override fun onDialogNegativeClick() {
-        Toast.makeText(requireContext(), "Delete canceled", Toast.LENGTH_SHORT).show()
-    }
-    private fun showConfirmationDialog() {
-        val dialog = ConfirmationDialogFragment()
-        dialog.setMessage(getString(R.string.confirm_delete_comment_report))
-        dialog.listener = this
-        dialog.show(parentFragmentManager, "ConfirmationDialog")
+    override fun onAcceptButtonClick(report: Report) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val reportService = ClientUtils.getReportService(token)
+
+        report.id?.let {
+            reportService.approveReport(it).enqueue(object : Callback<Report> {
+                override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                    if (response.isSuccessful) {
+                        showToast("Report approved")
+                        fetchReportsFromServer(token)
+                    } else {
+                        showToast("Failed to approve report")
+                    }
+                }
+
+                override fun onFailure(call: Call<Report>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+        }
     }
 
-    override fun onAcceptButtonClick() {
-        TODO("Not yet implemented")
-    }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
