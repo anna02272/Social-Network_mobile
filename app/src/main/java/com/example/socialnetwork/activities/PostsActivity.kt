@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -25,7 +24,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
+import com.example.socialnetwork.adpters.ImageEditPostAdapter
 import com.example.socialnetwork.adpters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReportReason
@@ -59,7 +61,7 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var popupPostEditText: EditText
     private lateinit var errorMessageTextView: TextView
     private lateinit var fileNameTextView: TextView
-    private lateinit var dimBackgroundView : View
+    private lateinit var dimBackgroundView: View
     private lateinit var createPostPopup: RelativeLayout
     private lateinit var closePopupButton: ImageView
     private lateinit var popupCreatePostButton: Button
@@ -67,6 +69,7 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var selectedImages: MutableList<Uri>
     private lateinit var progressBar: ProgressBar
     private lateinit var storageReference: StorageReference
+    private lateinit var recyclerView : RecyclerView
     private var currentUser: User? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -93,12 +96,11 @@ class PostsActivity : AppCompatActivity(),
         initializeActivityResultLauncher()
 
         initializeViews()
-
     }
 
-    private fun initializeViews(){
+    private fun initializeViews() {
         fileNameTextView = findViewById(R.id.fileNameTextView)
-        createPostTextView =  findViewById(R.id.createPostTextView)
+        createPostTextView = findViewById(R.id.createPostTextView)
         popupPostEditText = findViewById(R.id.popupPostEditText)
         errorMessageTextView = findViewById(R.id.post_error_message)
         dimBackgroundView = findViewById(R.id.dimBackgroundView)
@@ -119,6 +121,10 @@ class PostsActivity : AppCompatActivity(),
         findViewById<Button>(R.id.chooseFileButton).setOnClickListener {
             chooseImages()
         }
+
+        recyclerView = findViewById(R.id.imagesRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
     }
 
     private fun initializeFirebaseStorage() {
@@ -141,7 +147,7 @@ class PostsActivity : AppCompatActivity(),
     }
 
     override fun onDeleteButtonClick(post: Post) {
-       deletePost(post)
+        deletePost(post)
     }
 
     override fun onEditButtonClick(post: Post) {
@@ -206,7 +212,7 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun showPostPopup(post: Post? = null) {
-
+        recyclerView.visibility = View.GONE
         createPostTextView.text = if (post == null) {
             getString(R.string.create_post)
         } else {
@@ -221,11 +227,10 @@ class PostsActivity : AppCompatActivity(),
 
         if (post != null) {
             popupPostEditText.setText(post.content)
-            // Load and display images with remove functionality
-            // Set up removeImageView to handle image removal
+            loadImages(post.id)
         } else {
             popupPostEditText.text.clear()
-            // Clear images if any
+            selectedImages.clear()
         }
 
         dimBackgroundView.visibility = View.VISIBLE
@@ -330,6 +335,7 @@ class PostsActivity : AppCompatActivity(),
         adapter.editButtonClickListener = this
         listView.adapter = adapter
     }
+
     private fun fetchUserData(token: String) {
         val userService = ClientUtils.getUserService(token)
         val call = userService.whoAmI()
@@ -350,11 +356,41 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
+
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(this)
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()
+    }
+
+    private fun loadImages(postId: Long) {
+        val imageFolderRef = storageReference.child("post_images/$postId/")
+        imageFolderRef.listAll()
+            .addOnSuccessListener { listResult ->
+                val imageUrls = mutableListOf<String>()
+                val imageItems = listResult.items.size
+
+                if (imageItems == 0) {
+                    recyclerView.visibility = View.GONE
+                } else {
+                    listResult.items.forEachIndexed { index, item ->
+                        item.downloadUrl.addOnSuccessListener { uri ->
+                            imageUrls.add(uri.toString())
+                            if (index == imageItems - 1) {
+                                val adapter = ImageEditPostAdapter(this, imageUrls)
+                                recyclerView.adapter = adapter
+                                recyclerView.visibility = View.VISIBLE
+                            }
+                        }.addOnFailureListener {
+                            showToast("Failed to load image: ${it.message}")
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                showToast("Failed to list images: ${it.message}")
+            }
     }
 
     private fun handleCreatePost() {
@@ -446,7 +482,7 @@ class PostsActivity : AppCompatActivity(),
         })
     }
 
-    private fun uploadImagesToFirebase(postId: Long, files: List<File>, progressBar: ProgressBar) {
+    private fun uploadImagesToFirebase(postId: Long, files: List<File>, progressBar: ProgressBar)   {
         val totalFiles = files.size
         var uploadedFiles = 0
 
@@ -558,6 +594,7 @@ class PostsActivity : AppCompatActivity(),
             })
         }
     }
+
     private fun submitReport(post: Post) {
         val token = PreferencesManager.getToken(this) ?: return
         val reportService = ClientUtils.getReportService(token)

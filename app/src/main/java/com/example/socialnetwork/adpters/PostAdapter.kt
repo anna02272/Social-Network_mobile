@@ -74,6 +74,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             viewHolder.bind(it)
         }
 
+
         return view
     }
 
