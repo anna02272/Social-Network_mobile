@@ -43,9 +43,10 @@ interface PostService {
     @PUT("posts/update/{id}")
     fun update(
         @Path("id") id: Long,
-        @Part("content") content: String,
+        @Part("content") content: RequestBody,
         @Part images: List<MultipartBody.Part>? = null
     ): Call<Post>
+
 
     @Headers(
         "User-Agent: Mobile-Android",

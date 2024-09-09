@@ -41,6 +41,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
@@ -450,10 +451,12 @@ class PostsActivity : AppCompatActivity(),
         val imageFiles = getFilesFromUris(selectedImages)
         val images = prepareImages(imageFiles)
 
+        val postContentRequestBody = postContent.toRequestBody("text/plain".toMediaTypeOrNull())
+
         progressBar.visibility = View.VISIBLE
 
         val postService = ClientUtils.getPostService(token)
-        val call = postService.update(postId, postContent, images)
+        val call = postService.update(postId, postContentRequestBody, images)
 
         call.enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
