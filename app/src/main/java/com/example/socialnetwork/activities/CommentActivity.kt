@@ -33,7 +33,7 @@ class CommentActivity : BottomSheetDialogFragment() {
     private var token: String? = null
     private lateinit var contentEditText: EditText
     private lateinit var errorMessage: TextView
-
+    private var currentToast: Toast? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -127,7 +127,9 @@ class CommentActivity : BottomSheetDialogFragment() {
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        currentToast?.cancel()
+        currentToast = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT)
+        currentToast?.show()
     }
 
     private fun createComment(postId: Long) {

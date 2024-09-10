@@ -73,7 +73,7 @@ class ProfileActivity : AppCompatActivity() {
     private var storage: FirebaseStorage? = null
     private var storageReference: StorageReference? = null
     private var userId: Long? = null
-
+    private var currentToast: Toast? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
@@ -594,7 +594,9 @@ class ProfileActivity : AppCompatActivity() {
         })
     }
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        currentToast?.cancel()
+        currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        currentToast?.show()
     }
     private fun performLogout() {
         val userService = ClientUtils.userService

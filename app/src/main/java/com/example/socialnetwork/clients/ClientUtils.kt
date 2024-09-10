@@ -17,8 +17,6 @@ import com.example.socialnetwork.utils.LocalDateTimeDeserializer
 import com.example.socialnetwork.utils.LocalDateTimeSerializer
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonPrimitive
-import com.google.gson.JsonSerializer
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -26,6 +24,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
+
 
 object ClientUtils {
 

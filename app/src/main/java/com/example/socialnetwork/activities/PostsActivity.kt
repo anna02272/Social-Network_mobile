@@ -30,11 +30,17 @@ import com.example.socialnetwork.R
 import com.example.socialnetwork.adapters.ImageEditPostAdapter
 import com.example.socialnetwork.adapters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.EReactionType
 import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Image
 import com.example.socialnetwork.model.entity.Post
+import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.services.PostService
+import com.example.socialnetwork.services.ReactionService
+import com.example.socialnetwork.services.ReportService
+import com.example.socialnetwork.services.UserService
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
@@ -56,7 +62,10 @@ class PostsActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
     PostAdapter.ReportButtonClickListener,
     PostAdapter.DeleteButtonClickListener,
-    PostAdapter.EditButtonClickListener {
+    PostAdapter.EditButtonClickListener,
+    PostAdapter.LikeButtonClickListener,
+    PostAdapter.DislikeButtonClickListener,
+    PostAdapter.HeartButtonClickListener{
 
     private lateinit var createPostTextView: TextView
     private lateinit var popupPostEditText: EditText
@@ -72,10 +81,18 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var storageReference: StorageReference
     private lateinit var recyclerView : RecyclerView
     private var currentUser: User? = null
+    private var token: String? = null
+    private lateinit var postService: PostService
+    private lateinit var reactionService: ReactionService
+    private lateinit var userService: UserService
+    private lateinit var reportService: ReportService
+    private lateinit var adapter: PostAdapter
+    private var currentToast: Toast? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
-        val token = PreferencesManager.getToken(this)
+        token = PreferencesManager.getToken(this)
         if (token == null) {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
@@ -86,13 +103,15 @@ class PostsActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_posts)
 
+        initializeServices()
+
         initializeFirebaseStorage()
 
         setupBottomNavigation()
 
-        fetchPostsFromServer(token)
+        fetchPostsFromServer()
 
-        fetchUserData(token)
+        fetchUserData()
 
         initializeActivityResultLauncher()
 
@@ -125,7 +144,6 @@ class PostsActivity : AppCompatActivity(),
 
         recyclerView = findViewById(R.id.imagesRecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-
     }
 
     private fun initializeFirebaseStorage() {
@@ -134,6 +152,13 @@ class PostsActivity : AppCompatActivity(),
         storageReference = firebaseStorage.reference
     }
 
+    private fun initializeServices() {
+        val token = PreferencesManager.getToken(this) ?: return
+        postService = ClientUtils.getPostService(token)
+        reactionService = ClientUtils.getReactionService(token)
+        userService = ClientUtils.getUserService(token)
+        reportService = ClientUtils.getReportService(token)
+    }
     override fun onCommentButtonClick(post: Post) {
         val commentActivity = CommentActivity().apply {
             arguments = Bundle().apply {
@@ -153,6 +178,18 @@ class PostsActivity : AppCompatActivity(),
 
     override fun onEditButtonClick(post: Post) {
         showPostPopup(post)
+    }
+
+    override fun onLikeButtonClick(post: Post) {
+        reactToPost(post, EReactionType.LIKE)
+    }
+
+    override fun onDislikeButtonClick(post: Post) {
+        reactToPost(post, EReactionType.DISLIKE)
+    }
+
+    override fun onHeartButtonClick(post: Post) {
+        reactToPost(post, EReactionType.HEART)
     }
 
     private fun setupBottomNavigation() {
@@ -301,8 +338,7 @@ class PostsActivity : AppCompatActivity(),
         reasonSpinner.setSelection(0)
     }
 
-    private fun fetchPostsFromServer(token: String) {
-        val postService = ClientUtils.getPostService(token)
+    private fun fetchPostsFromServer() {
         val call = postService.getAll()
 
         call.enqueue(object : Callback<ArrayList<Post>> {
@@ -328,16 +364,18 @@ class PostsActivity : AppCompatActivity(),
 
     private fun updateListView(posts: ArrayList<Post>) {
         val listView: ListView = findViewById(R.id.postsListView)
-        val adapter = PostAdapter(this, posts)
+        adapter = PostAdapter(this, posts)
         adapter.commentButtonClickListener = this
         adapter.reportButtonClickListener = this
         adapter.deleteButtonClickListener = this
         adapter.editButtonClickListener = this
+        adapter.likeButtonClickListener = this
+        adapter.dislikeButtonClickListener = this
+        adapter.heartButtonClickListener = this
         listView.adapter = adapter
     }
 
-    private fun fetchUserData(token: String) {
-        val userService = ClientUtils.getUserService(token)
+    private fun fetchUserData() {
         val call = userService.whoAmI()
 
         call.enqueue(object : Callback<User> {
@@ -395,7 +433,6 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun handleCreatePost() {
-        val token = PreferencesManager.getToken(this) ?: return
         val postContent = popupPostEditText.text.toString().trim()
 
         if (postContent.isEmpty()) {
@@ -410,7 +447,6 @@ class PostsActivity : AppCompatActivity(),
 
         progressBar.visibility = View.VISIBLE
 
-        val postService = ClientUtils.getPostService(token)
         val call = postService.create(contentPart, images)
 
         call.enqueue(object : Callback<Post> {
@@ -423,7 +459,7 @@ class PostsActivity : AppCompatActivity(),
                         } else {
                             progressBar.visibility = View.GONE
                             showToast("Post created successfully")
-                            fetchPostsFromServer(token)
+                            token?.let { it1 -> fetchPostsFromServer() }
                             dismissPostPopup()
                         }
                     }
@@ -441,7 +477,6 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun handleEditPost(postId: Long) {
-        val token = PreferencesManager.getToken(this) ?: return
         val postContent = popupPostEditText.text.toString().trim()
 
         if (postContent.isEmpty()) {
@@ -456,7 +491,6 @@ class PostsActivity : AppCompatActivity(),
 
         progressBar.visibility = View.VISIBLE
 
-        val postService = ClientUtils.getPostService(token)
         val call = postService.update(postId, postContentRequestBody, images)
 
         call.enqueue(object : Callback<Post> {
@@ -469,7 +503,7 @@ class PostsActivity : AppCompatActivity(),
                         } else {
                             progressBar.visibility = View.GONE
                             showToast("Post updated successfully")
-                            fetchPostsFromServer(token)
+                            token?.let { fetchPostsFromServer() }
                             dismissPostPopup()
                         }
                     }
@@ -506,7 +540,7 @@ class PostsActivity : AppCompatActivity(),
                 if (uploadedFiles == totalFiles) {
                     progressBar.visibility = View.GONE
                     showToast("Post created successfully")
-                    fetchPostsFromServer(PreferencesManager.getToken(this)!!)
+                    fetchPostsFromServer()
                     dismissPostPopup()
                 }
             }.addOnFailureListener {
@@ -583,15 +617,12 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun deletePost(post: Post){
-        val token = PreferencesManager.getToken(this) ?: return
-        val postService = ClientUtils.getPostService(token)
-
         post.id?.let { postId ->
             postService.delete(postId).enqueue(object : Callback<Post> {
                 override fun onResponse(call: Call<Post>, response: Response<Post>) {
                     if (response.isSuccessful) {
                         showToast("Post deleted successfully")
-                        fetchPostsFromServer(token)
+                        token?.let { fetchPostsFromServer() }
                     } else {
                         showToast("Failed to delete post: ${response.message()}")
                     }
@@ -604,8 +635,6 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun submitReport(post: Post) {
-        val token = PreferencesManager.getToken(this) ?: return
-        val reportService = ClientUtils.getReportService(token)
         val reasonSpinner: Spinner = findViewById(R.id.popupReasonSpinner)
         val selectedReason = reasonSpinner.selectedItem.toString()
         val reason = EReportReason.valueOf(selectedReason.replace(' ', '_'))
@@ -645,6 +674,24 @@ class PostsActivity : AppCompatActivity(),
             }
         }
     }
+    private fun reactToPost(post: Post, reactionType: EReactionType) {
+        val reaction =
+            currentUser?.let { Reaction(0, reactionType, LocalDate.now(), it, post, null) }
+        reaction?.let { reactionService.reactToPost(post.id, it) }
+            ?.enqueue(object : Callback<Reaction> {
+                override fun onResponse(call: Call<Reaction>, response: Response<Reaction>) {
+                    if (response.isSuccessful) {
+//                        PostAdapter.updateReactionCounts(post)
+//                        PostAdapter.checkUserReaction(post)
+                        showToast("Reacted successfully")
+                    }
+                }
+
+                override fun onFailure(call: Call<Reaction>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+    }
 
     private fun showValidationError(message: String) {
         popupPostEditText.background =
@@ -654,7 +701,8 @@ class PostsActivity : AppCompatActivity(),
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        currentToast?.cancel()
+        currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        currentToast?.show()
     }
-
 }

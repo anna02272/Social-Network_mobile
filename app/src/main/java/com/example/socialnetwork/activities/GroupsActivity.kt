@@ -43,6 +43,7 @@ class GroupsActivity : AppCompatActivity(),
     private lateinit var groupErrorMessage: TextView
     private lateinit var suspendErrorMessage: TextView
     private var groupIdToSuspend: Long? = null
+    private var currentToast: Toast? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_groups)
@@ -162,7 +163,9 @@ class GroupsActivity : AppCompatActivity(),
         finish()
     }
     private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        currentToast?.cancel()
+        currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        currentToast?.show()
     }
     private fun updateListView(groups: ArrayList<Group>) {
         val listView: ListView = findViewById(R.id.groupsListView)
