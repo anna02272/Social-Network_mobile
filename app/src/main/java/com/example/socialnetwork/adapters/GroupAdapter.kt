@@ -1,4 +1,4 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import android.content.Context
 import android.view.LayoutInflater

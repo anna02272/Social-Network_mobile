@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.SearchAdapter
+import com.example.socialnetwork.adapters.SearchAdapter
 import com.example.socialnetwork.model.entity.User
 import com.google.android.material.bottomnavigation.BottomNavigationView
 

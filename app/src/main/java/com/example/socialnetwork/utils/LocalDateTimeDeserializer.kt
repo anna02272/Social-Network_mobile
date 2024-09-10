@@ -17,9 +17,9 @@ class LocalDateTimeDeserializer : JsonDeserializer<LocalDateTime> {
         val day = jsonArray[2].asInt
         val hour = jsonArray[3].asInt
         val minute = jsonArray[4].asInt
-        val second = jsonArray[5].asInt
+//        val second = jsonArray[5].asInt
 
-        return LocalDateTime.of(year, month, day, hour, minute, second)
+        return LocalDateTime.of(year, month, day, hour, minute)
     }
 }
 

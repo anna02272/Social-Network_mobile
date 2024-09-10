@@ -15,7 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.GroupAdapter
+import com.example.socialnetwork.adapters.GroupAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.CreateGroupRequest
 import com.example.socialnetwork.model.entity.Group

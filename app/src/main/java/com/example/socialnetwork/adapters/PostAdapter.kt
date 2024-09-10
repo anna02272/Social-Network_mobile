@@ -1,4 +1,4 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import ImagePagerAdapter
 import android.content.Context

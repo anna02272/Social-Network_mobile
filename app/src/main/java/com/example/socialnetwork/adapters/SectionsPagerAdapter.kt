@@ -1,4 +1,4 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

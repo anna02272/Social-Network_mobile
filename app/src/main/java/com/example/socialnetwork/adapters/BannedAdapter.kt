@@ -1,4 +1,4 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import android.content.Context
 import android.util.Log
@@ -9,28 +9,23 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.model.entity.FriendRequest
+import com.example.socialnetwork.model.entity.Banned
 
-class FriendRequestAdapter(
+class BannedAdapter(
     context: Context,
-    friendRequest: ArrayList<FriendRequest>,
-    private val acceptButtonText: String? = null,
-    private val deleteButtonText: String? = null) :
-    ArrayAdapter<FriendRequest>(context, R.layout.fragment_report, friendRequest) {
+    bannedUsers: ArrayList<Banned>,
+    private val acceptButtonText: String? = null) :
+    ArrayAdapter<Banned>(context, R.layout.fragment_report, bannedUsers) {
 
     interface AcceptButtonClickListener {
-        fun onAcceptButtonClick(friendRequestId: Long)
-    }
-    interface DeleteButtonClickListener {
-        fun onDeleteButtonClick(friendRequestId: Long)
+        fun onAcceptButtonClick(bannedId: Long)
     }
 
     var acceptButtonClickListener: AcceptButtonClickListener? = null
-    var deleteButtonClickListener: DeleteButtonClickListener? = null
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
-        val friendRequest: FriendRequest? = getItem(position)
+        val bannedUsers: Banned? = getItem(position)
 
         if (view == null) {
             view = LayoutInflater.from(context).inflate(R.layout.fragment_report, parent, false)
@@ -45,37 +40,28 @@ class FriendRequestAdapter(
         val acceptButton = view.findViewById<Button>(R.id.acceptButton)
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
-        friendRequest?.let {
+        bannedUsers?.let {
             try {
-                userTextView.text = it.fromUser.firstName + " " + it.fromUser.lastName
-                dateTextView.text = it.created_at.toString()
-
-                reportContentTextView.visibility = View.GONE
-                reasonContentTextView.visibility = View.GONE
-                reportTextView.visibility = View.GONE
-                reasonTextView.visibility = View.GONE
+                userTextView.text = it.bannedUser?.username
+                dateTextView.text = it.timeStamp.toString()
 
                 acceptButton.visibility =
                     if (acceptButtonText.isNullOrEmpty()) View.GONE else View.VISIBLE
                 acceptButton.text = acceptButtonText
 
-                deleteButton.visibility =
-                    if (deleteButtonText.isNullOrEmpty()) View.GONE else View.VISIBLE
-                deleteButton.text = deleteButtonText
+                reportContentTextView.visibility = View.GONE
+                reasonContentTextView.visibility = View.GONE
+                reportTextView.visibility = View.GONE
+                reasonTextView.visibility = View.GONE
+                deleteButton.visibility = View.GONE
 
             } catch (e: Exception) {
-                Log.e("FriendRequestAdapter", "Error binding view: ${e.message}", e)
+                Log.e("BannedAdapter", "Error binding view: ${e.message}", e)
             }
         }
         acceptButton.setOnClickListener {
-            friendRequest?.let {
+            bannedUsers?.let {
                 it.id?.let { it1 -> acceptButtonClickListener?.onAcceptButtonClick(it1) }
-            }
-        }
-
-        deleteButton.setOnClickListener {
-            friendRequest?.let {
-                it.id?.let { it1 -> deleteButtonClickListener?.onDeleteButtonClick(it1) }
             }
         }
 

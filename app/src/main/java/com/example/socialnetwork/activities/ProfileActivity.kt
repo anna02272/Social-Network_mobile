@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.BulletPointAdapter
+import com.example.socialnetwork.adapters.BulletPointAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.ChangePassword
 import com.example.socialnetwork.model.entity.Group

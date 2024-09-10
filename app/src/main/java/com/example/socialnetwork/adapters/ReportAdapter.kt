@@ -1,4 +1,4 @@
-package com.example.socialnetwork.adpters
+package com.example.socialnetwork.adapters
 
 import android.content.Context
 import android.util.Log
@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.model.entity.Banned
 import com.example.socialnetwork.model.entity.Report
 
 class ReportAdapter(

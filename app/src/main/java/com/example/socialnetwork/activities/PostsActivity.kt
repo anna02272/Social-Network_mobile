@@ -27,10 +27,11 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adpters.ImageEditPostAdapter
-import com.example.socialnetwork.adpters.PostAdapter
+import com.example.socialnetwork.adapters.ImageEditPostAdapter
+import com.example.socialnetwork.adapters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReportReason
+import com.example.socialnetwork.model.entity.Image
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.model.entity.User
@@ -41,7 +42,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
@@ -317,8 +317,7 @@ class PostsActivity : AppCompatActivity(),
                     handleTokenExpired()
                 } else {
                     showToast("Failed to load posts")
-
-                }
+                   }
             }
 
             override fun onFailure(call: Call<ArrayList<Post>>, t: Throwable) {
@@ -369,17 +368,18 @@ class PostsActivity : AppCompatActivity(),
         val imageFolderRef = storageReference.child("post_images/$postId/")
         imageFolderRef.listAll()
             .addOnSuccessListener { listResult ->
-                val imageUrls = mutableListOf<String>()
+                val imageUrls = mutableListOf<Pair<String, String>>()
                 val imageItems = listResult.items.size
 
                 if (imageItems == 0) {
                     recyclerView.visibility = View.GONE
                 } else {
                     listResult.items.forEachIndexed { index, item ->
+                        val imageId = item.name
                         item.downloadUrl.addOnSuccessListener { uri ->
-                            imageUrls.add(uri.toString())
+                            imageUrls.add(Pair(imageId, uri.toString()))
                             if (index == imageItems - 1) {
-                                val adapter = ImageEditPostAdapter(this, imageUrls)
+                                val adapter = ImageEditPostAdapter(this, imageUrls, postId)
                                 recyclerView.adapter = adapter
                                 recyclerView.visibility = View.VISIBLE
                             }
@@ -418,8 +418,8 @@ class PostsActivity : AppCompatActivity(),
                 if (response.isSuccessful) {
                     val post = response.body()
                     post?.let {
-                        if (imageFiles.isNotEmpty()) {
-                            uploadImagesToFirebase(it.id, imageFiles, progressBar)
+                        if (imageFiles.isNotEmpty() && post.images.isNotEmpty()) {
+                            uploadImagesToFirebase(it.id, post.images, imageFiles, progressBar)
                         } else {
                             progressBar.visibility = View.GONE
                             showToast("Post created successfully")
@@ -439,6 +439,7 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
+
     private fun handleEditPost(postId: Long) {
         val token = PreferencesManager.getToken(this) ?: return
         val postContent = popupPostEditText.text.toString().trim()
@@ -463,8 +464,8 @@ class PostsActivity : AppCompatActivity(),
                 if (response.isSuccessful) {
                     val post = response.body()
                     post?.let {
-                        if (imageFiles.isNotEmpty()) {
-                            uploadImagesToFirebase(it.id, imageFiles, progressBar)
+                        if (imageFiles.isNotEmpty() && post.images.isNotEmpty()) {
+                            uploadImagesToFirebase(it.id, post.images, imageFiles, progressBar)
                         } else {
                             progressBar.visibility = View.GONE
                             showToast("Post updated successfully")
@@ -485,13 +486,18 @@ class PostsActivity : AppCompatActivity(),
         })
     }
 
-    private fun uploadImagesToFirebase(postId: Long, files: List<File>, progressBar: ProgressBar)   {
+    private fun uploadImagesToFirebase(postId: Long, images: List<Image>, files: List<File>, progressBar: ProgressBar) {
         val totalFiles = files.size
+        if (images.size != totalFiles) {
+            showToast("Mismatch between images and files")
+            progressBar.visibility = View.GONE
+            return
+        }
         var uploadedFiles = 0
 
-        files.forEach { file ->
+        files.forEachIndexed { index, file ->
             val fileUri = Uri.fromFile(file)
-            val imageRef = storageReference.child("post_images/$postId/${file.name}")
+            val imageRef = storageReference.child("post_images/$postId/${images[index].id}")
 
             val uploadTask = imageRef.putFile(fileUri)
 
@@ -509,7 +515,6 @@ class PostsActivity : AppCompatActivity(),
             }
         }
     }
-
     private fun prepareImages(files: List<File>): List<MultipartBody.Part> {
         return files.takeIf { it.isNotEmpty() }?.map { file ->
             val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())

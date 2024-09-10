@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.activities.LoginActivity
-import com.example.socialnetwork.adpters.ReportAdapter
+import com.example.socialnetwork.adapters.ReportAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.utils.PreferencesManager
