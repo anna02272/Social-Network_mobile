@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.ProgressBar
@@ -180,16 +181,16 @@ class PostsActivity : AppCompatActivity(),
         showPostPopup(post)
     }
 
-    override fun onLikeButtonClick(post: Post) {
-        reactToPost(post, EReactionType.LIKE)
+    override fun onLikeButtonClick(post: Post, view: View) {
+        reactToPost(post, EReactionType.LIKE, view)
     }
 
-    override fun onDislikeButtonClick(post: Post) {
-        reactToPost(post, EReactionType.DISLIKE)
+    override fun onDislikeButtonClick(post: Post, view: View) {
+        reactToPost(post, EReactionType.DISLIKE, view)
     }
 
-    override fun onHeartButtonClick(post: Post) {
-        reactToPost(post, EReactionType.HEART)
+    override fun onHeartButtonClick(post: Post, view: View) {
+        reactToPost(post, EReactionType.HEART, view)
     }
 
     private fun setupBottomNavigation() {
@@ -674,15 +675,23 @@ class PostsActivity : AppCompatActivity(),
             }
         }
     }
-    private fun reactToPost(post: Post, reactionType: EReactionType) {
+    private fun reactToPost(post: Post, reactionType: EReactionType, view: View) {
+        val likeCountTextView: TextView = view.findViewById(R.id.likeCountTextView)
+        val dislikeCountTextView: TextView = view.findViewById(R.id.dislikeCountTextView)
+        val heartCountTextView: TextView = view.findViewById(R.id.heartCountTextView)
+        val likeButton: ImageButton = view.findViewById(R.id.likeButton)
+        val dislikeButton: ImageButton = view.findViewById(R.id.dislikeButton)
+        val heartButton: ImageButton = view.findViewById(R.id.heartButton)
         val reaction =
             currentUser?.let { Reaction(0, reactionType, LocalDate.now(), it, post, null) }
         reaction?.let { reactionService.reactToPost(post.id, it) }
             ?.enqueue(object : Callback<Reaction> {
                 override fun onResponse(call: Call<Reaction>, response: Response<Reaction>) {
                     if (response.isSuccessful) {
-//                        PostAdapter.updateReactionCounts(post)
-//                        PostAdapter.checkUserReaction(post)
+                        PostAdapter.updateReactionCounts(this@PostsActivity, post, likeCountTextView, dislikeCountTextView, heartCountTextView)
+                        currentUser?.let {
+                            PostAdapter.checkUserReaction(this@PostsActivity, it, post, likeButton, dislikeButton, heartButton)
+                        }
                         showToast("Reacted successfully")
                     }
                 }

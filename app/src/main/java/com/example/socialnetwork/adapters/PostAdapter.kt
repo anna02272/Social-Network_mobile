@@ -2,7 +2,6 @@ package com.example.socialnetwork.adapters
 
 import ImagePagerAdapter
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +40,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         fetchUserData(object : UserCallback {
             override fun onUserFetched(user: User?) {
                 currentUser = user
+                notifyDataSetChanged()
             }
         })
     }
@@ -73,15 +73,15 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     }
 
     interface LikeButtonClickListener {
-        fun onLikeButtonClick(post: Post)
+        fun onLikeButtonClick(post: Post, view: View)
     }
 
     interface DislikeButtonClickListener {
-        fun onDislikeButtonClick(post: Post)
+        fun onDislikeButtonClick(post: Post, view: View)
     }
 
     interface HeartButtonClickListener {
-        fun onHeartButtonClick(post: Post)
+        fun onHeartButtonClick(post: Post, view: View)
     }
 
     var commentButtonClickListener: CommentButtonClickListener? = null
@@ -91,6 +91,10 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     var likeButtonClickListener: LikeButtonClickListener? = null
     var dislikeButtonClickListener: DislikeButtonClickListener? = null
     var heartButtonClickListener: HeartButtonClickListener? = null
+
+    private lateinit var likeButton: ImageButton
+    private lateinit var dislikeButton: ImageButton
+    private lateinit var heartButton: ImageButton
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view: View
@@ -105,20 +109,14 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             viewHolder = view.tag as ViewHolder
         }
 
+        dislikeButton = view.findViewById(R.id.dislikeButton)
+        likeButton = view.findViewById(R.id.likeButton)
+        heartButton = view.findViewById(R.id.heartButton)
+
         val post: Post? = getItem(position)
         post?.let {
-            viewHolder.bind(it)
+            viewHolder.bind(it, view)
         }
-
-
-        fetchUserData(object : UserCallback {
-            override fun onUserFetched(user: User?) {
-                currentUser = user
-                post?.let {
-                    viewHolder.checkUserReaction(it)
-                }
-            }
-        })
 
         return view
     }
@@ -131,50 +129,80 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         private val commentButton: ImageButton = view.findViewById(R.id.commentButton)
         private val moreOptionsButton: ImageButton = view.findViewById(R.id.moreOptionsButton)
         private val viewPager: ViewPager2 = view.findViewById(R.id.viewPager)
-        val likeButton: ImageButton = view.findViewById(R.id.likeButton)
-        val dislikeButton: ImageButton = view.findViewById(R.id.dislikeButton)
-        val heartButton: ImageButton = view.findViewById(R.id.heartButton)
         private val likeCountTextView: TextView = view.findViewById(R.id.likeCountTextView)
         private val dislikeCountTextView: TextView = view.findViewById(R.id.dislikeCountTextView)
         private val heartCountTextView: TextView = view.findViewById(R.id.heartCountTextView)
 
-        fun bind(post: Post) {
+        fun bind(post: Post, view: View) {
             // Load profile image
-            usernameTextView.text = post.user?.profileName?.takeIf { it.isNotEmpty() } ?: post.user?.username
-            dateTextView.text = post.creationDate.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+            usernameTextView.text =
+                post.user?.profileName?.takeIf { it.isNotEmpty() } ?: post.user?.username
+            dateTextView.text =
+                post.creationDate.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
             contentTextView.text = post.content
 
             loadPostImages(post.id, viewPager)
 
-            setupButtons(post)
+            setupButtons(post, view)
 
-            likeCountTextView.text = post.reactions.count { it.type == EReactionType.LIKE }.toString()
-            dislikeCountTextView.text = post.reactions.count { it.type == EReactionType.DISLIKE }.toString()
-            heartCountTextView.text = post.reactions.count { it.type == EReactionType.HEART }.toString()
+            likeCountTextView.text =
+                post.reactions.count { it.type == EReactionType.LIKE }.toString()
+            dislikeCountTextView.text =
+                post.reactions.count { it.type == EReactionType.DISLIKE }.toString()
+            heartCountTextView.text =
+                post.reactions.count { it.type == EReactionType.HEART }.toString()
 
-            updateReactionCounts(post)
-            checkUserReaction(post)
+            updateReactionCounts(context, post, likeCountTextView, dislikeCountTextView, heartCountTextView)
+            currentUser?.let { checkUserReaction(context, it, post, likeButton, dislikeButton, heartButton) }
         }
-        private fun updateReactionCounts(post: Post) {
+
+        private fun setupButtons(post: Post, view: View) {
+            moreOptionsButton.setOnClickListener { showPopupMenu(it, post) }
+            commentButton.setOnClickListener { commentButtonClickListener?.onCommentButtonClick(post) }
+            likeButton.setOnClickListener { likeButtonClickListener?.onLikeButtonClick(post, view) }
+            dislikeButton.setOnClickListener { dislikeButtonClickListener?.onDislikeButtonClick(post, view) }
+            heartButton.setOnClickListener { heartButtonClickListener?.onHeartButtonClick(post, view) }
+        }
+
+    }
+    companion object {
+        fun updateReactionCounts(context: Context,
+                                 post: Post,
+                                 likeCountTextView: TextView,
+                                 dislikeCountTextView: TextView,
+                                 heartCountTextView: TextView) {
             val token = PreferencesManager.getToken(context) ?: return
             val reactionService = ClientUtils.getReactionService(token)
             val call = reactionService.countReactionsByPost(post.id)
             call.enqueue(object : Callback<Map<EReactionType, Integer>> {
-                override fun onResponse(call: Call<Map<EReactionType, Integer>>, response: Response<Map<EReactionType, Integer>>) {
+                override fun onResponse(
+                    call: Call<Map<EReactionType, Integer>>,
+                    response: Response<Map<EReactionType, Integer>>
+                ) {
                     if (response.isSuccessful) {
                         response.body()?.let { reactionCounts ->
-                        likeCountTextView.text = reactionCounts[EReactionType.LIKE]?.toString() ?: "0"
-                        dislikeCountTextView.text = reactionCounts[EReactionType.DISLIKE]?.toString() ?: "0"
-                        heartCountTextView.text = reactionCounts[EReactionType.HEART]?.toString() ?: "0"
+                            likeCountTextView.text =
+                                reactionCounts[EReactionType.LIKE]?.toString() ?: "0"
+                            dislikeCountTextView.text =
+                                reactionCounts[EReactionType.DISLIKE]?.toString() ?: "0"
+                            heartCountTextView.text =
+                                reactionCounts[EReactionType.HEART]?.toString() ?: "0"
                         }
                     }
                 }
+
                 override fun onFailure(call: Call<Map<EReactionType, Integer>>, t: Throwable) {
-                    showToast("Error: ${t.message}")
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }
-        fun checkUserReaction(post: Post) {
+
+        fun checkUserReaction(context: Context,
+                              currentUser: User,
+                              post: Post,
+                              likeButton: ImageButton,
+                              dislikeButton: ImageButton,
+                              heartButton: ImageButton) {
             currentUser?.id?.let {
                 val token = PreferencesManager.getToken(context) ?: return
                 val reactionService = ClientUtils.getReactionService(token)
@@ -193,7 +221,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                                     val (button, colorResId) = pair
                                     button.post {
                                         val color = ContextCompat.getColor(context, colorResId)
-                                        changeReactionColor(button, reaction.type == type, color)
+                                        changeReactionColor(context, button, reaction.type == type, color)
                                     }
                                 }
                             }
@@ -201,25 +229,15 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                     }
 
                     override fun onFailure(call: Call<Reaction?>, t: Throwable) {
-                        showToast("Error: ${t.message}")
+                        Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 })
             }
         }
-
-        private fun changeReactionColor(button: ImageButton, reacted: Boolean, color: Int) {
+        fun changeReactionColor(context: Context, button: ImageButton, reacted: Boolean, color: Int) {
             val finalColor = if (reacted) color else ContextCompat.getColor(context, R.color.grey)
             button.setColorFilter(finalColor)
         }
-
-        private fun setupButtons(post: Post) {
-            moreOptionsButton.setOnClickListener { showPopupMenu(it, post) }
-            commentButton.setOnClickListener { commentButtonClickListener?.onCommentButtonClick(post) }
-            likeButton.setOnClickListener { likeButtonClickListener?.onLikeButtonClick(post) }
-            dislikeButton.setOnClickListener { dislikeButtonClickListener?.onDislikeButtonClick(post) }
-            heartButton.setOnClickListener { heartButtonClickListener?.onHeartButtonClick(post) }
-        }
-
     }
     private fun fetchUserData(callback: UserCallback) {
         val token = PreferencesManager.getToken(context) ?: return
@@ -231,7 +249,6 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                 if (response.isSuccessful) {
                     val user = response.body()
                     if (user != null) {
-                        Log.d("PostAdapter", "User data received: $user")
                         currentUser = user
                         callback.onUserFetched(user)
                     }
@@ -246,6 +263,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             }
         })
     }
+
     private fun loadPostImages(postId: Long, viewPager: ViewPager2) {
         val imageFolderRef = storageReference.child("post_images/$postId/")
         imageFolderRef.listAll()
@@ -274,6 +292,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                 showToast("Failed to list images: ${it.message}")
             }
     }
+
     private fun showPopupMenu(view: View, post: Post) {
         val popup = PopupMenu(mContext, view)
 
@@ -288,24 +307,29 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
                     editButtonClickListener?.onEditButtonClick(post)
                     true
                 }
+
                 R.id.delete -> {
                     deleteButtonClickListener?.onDeleteButtonClick(post)
                     true
                 }
+
                 R.id.report -> {
                     reportButtonClickListener?.onReportButtonClick(post)
                     true
                 }
+
                 else -> false
             }
         }
 
         popup.show()
     }
+
     private fun showToast(message: String) {
         currentToast?.cancel()
         currentToast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
         currentToast?.show()
     }
-}
 
+
+}
