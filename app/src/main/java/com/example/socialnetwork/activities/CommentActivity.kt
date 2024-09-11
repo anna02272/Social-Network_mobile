@@ -98,7 +98,7 @@ class CommentActivity : BottomSheetDialogFragment(),
             handleTokenExpired()
         } else {
             initializeServices()
-            fetchCommentsFromServer(token!!, postId!!)
+            fetchCommentsFromServer(postId!!)
         }
 
         fetchUserData()
@@ -126,7 +126,7 @@ class CommentActivity : BottomSheetDialogFragment(),
        }
 
        override fun onDeleteButtonClick(comment: Comment) {
-           TODO("Not yet implemented")
+           deleteComment(comment)
        }
 
        override fun onReportButtonClick(comment: Comment) {
@@ -159,7 +159,7 @@ class CommentActivity : BottomSheetDialogFragment(),
     }
 
 
-    private fun fetchCommentsFromServer(token: String, postId: Long) {
+    private fun fetchCommentsFromServer(postId: Long) {
         val call = commentService.getCommentsByPostId(postId)
 
         call.enqueue(object : Callback<List<Comment>> {
@@ -235,7 +235,7 @@ class CommentActivity : BottomSheetDialogFragment(),
             override fun onResponse(call: Call<Comment>, response: Response<Comment>) {
                 if (response.isSuccessful) {
                     showToast("Comment created successfully")
-                    token?.let { fetchCommentsFromServer(it, postId) }
+                    token?.let { fetchCommentsFromServer(postId) }
                     resetUI()
                 } else {
                     handleError(response)
@@ -247,6 +247,23 @@ class CommentActivity : BottomSheetDialogFragment(),
             }
         })
     }
+       private fun deleteComment(comment: Comment){
+           comment.id?.let { commentId ->
+               commentService.delete(commentId).enqueue(object : Callback<Comment> {
+                   override fun onResponse(call: Call<Comment>, response: Response<Comment>) {
+                       if (response.isSuccessful) {
+                           showToast("Comment deleted successfully")
+                           token?.let { fetchCommentsFromServer(comment.post.id) }
+                       } else {
+                           showToast("Failed to delete post: ${response.message()}")
+                       }
+                   }
+                   override fun onFailure(call: Call<Comment>, t: Throwable) {
+                       showToast("Error: ${t.message}")
+                   }
+               })
+           }
+       }
        private fun reactToComment(comment: Comment, reactionType: EReactionType, view: View) {
            val likeCountTextView: TextView = view.findViewById(R.id.likeCountTextView)
            val dislikeCountTextView: TextView = view.findViewById(R.id.dislikeCountTextView)
