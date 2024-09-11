@@ -557,7 +557,6 @@ class ProfileActivity : AppCompatActivity() {
             }
         })
     }
-
     private fun deleteImage(userId: Long) {
         progressBar.visibility = View.VISIBLE
 

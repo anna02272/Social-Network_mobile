@@ -19,10 +19,12 @@ import com.example.socialnetwork.model.entity.EReactionType
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.utils.CircleTransform
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -122,7 +124,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
     }
 
     inner class ViewHolder(view: View) {
-        private val profileImage: ImageView = view.findViewById(R.id.profileImage)
+        private val profileImageView: ImageView = view.findViewById(R.id.profileImage)
         private val usernameTextView: TextView = view.findViewById(R.id.usernameTextView)
         private val dateTextView: TextView = view.findViewById(R.id.dateTextView)
         private val contentTextView: TextView = view.findViewById(R.id.contentTextView)
@@ -134,7 +136,7 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
         private val heartCountTextView: TextView = view.findViewById(R.id.heartCountTextView)
 
         fun bind(post: Post, view: View) {
-            // Load profile image
+            post.user?.id?.let { loadProfileImage(it) }
             usernameTextView.text =
                 post.user?.profileName?.takeIf { it.isNotEmpty() } ?: post.user?.username
             dateTextView.text =
@@ -145,6 +147,18 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
 
             setupButtons(post, view)
 
+            setupReactions(post)
+        }
+
+        private fun setupButtons(post: Post, view: View) {
+            moreOptionsButton.setOnClickListener { showPopupMenu(it, post) }
+            commentButton.setOnClickListener { commentButtonClickListener?.onCommentButtonClick(post) }
+            likeButton.setOnClickListener { likeButtonClickListener?.onLikeButtonClick(post, view) }
+            dislikeButton.setOnClickListener { dislikeButtonClickListener?.onDislikeButtonClick(post, view) }
+            heartButton.setOnClickListener { heartButtonClickListener?.onHeartButtonClick(post, view) }
+        }
+
+        private fun setupReactions(post: Post){
             likeCountTextView.text =
                 post.reactions.count { it.type == EReactionType.LIKE }.toString()
             dislikeCountTextView.text =
@@ -156,12 +170,13 @@ class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
             currentUser?.let { checkUserReaction(context, it, post, likeButton, dislikeButton, heartButton) }
         }
 
-        private fun setupButtons(post: Post, view: View) {
-            moreOptionsButton.setOnClickListener { showPopupMenu(it, post) }
-            commentButton.setOnClickListener { commentButtonClickListener?.onCommentButtonClick(post) }
-            likeButton.setOnClickListener { likeButtonClickListener?.onLikeButtonClick(post, view) }
-            dislikeButton.setOnClickListener { dislikeButtonClickListener?.onDislikeButtonClick(post, view) }
-            heartButton.setOnClickListener { heartButtonClickListener?.onHeartButtonClick(post, view) }
+        private fun loadProfileImage(userId: Long) {
+            val ref = storageReference!!.child("profile_images/$userId")
+            ref.downloadUrl.addOnSuccessListener { uri ->
+                Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
+            }.addOnFailureListener {
+                profileImageView.setImageResource(R.drawable.smiley_circle)
+            }
         }
 
     }
