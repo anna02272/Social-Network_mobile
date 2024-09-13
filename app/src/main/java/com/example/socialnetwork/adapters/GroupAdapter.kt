@@ -5,22 +5,41 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import com.example.socialnetwork.R
+import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.EUserType
 import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.model.entity.GroupRequest
+import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.utils.PreferencesManager
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class GroupAdapter(context: Context, groups: ArrayList<Group>) :
     ArrayAdapter<Group>(context, R.layout.fragment_group, groups) {
-
+    private var currentUser: User? = null
+    private var currentToast: Toast? = null
+    init {
+        fetchUserData()
+    }
     interface DeleteButtonClickListener {
         fun onDeleteButtonClick(groupId: Long?)
     }
 
-    var deleteButtonClickListener: GroupAdapter.DeleteButtonClickListener? = null
+    interface GroupRequestButtonClickListener {
+        fun onGroupRequestButtonClick(group: Group)
+    }
+
+    var deleteButtonClickListener: DeleteButtonClickListener? = null
+    var groupRequestButtonClickListener: GroupRequestButtonClickListener? = null
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
         val group: Group? = getItem(position)
@@ -34,6 +53,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
         val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
         val adminTextView = view.findViewById<TextView>(R.id.adminTextView)
         val moreOptionsButton = view.findViewById<ImageButton>(R.id.moreOptionsButton)
+        val joinButton = view.findViewById<Button>(R.id.joinButton)
 
         group?.let { it ->
             nameTextView.text = it.name
@@ -52,20 +72,45 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
             showPopupMenu(view, group?.id)
         }
 
+        joinButton.setOnClickListener { view ->
+            group?.let {
+                groupRequestButtonClickListener?.onGroupRequestButtonClick(it)
+            }
+        }
+
         return view
     }
+    private fun fetchUserData() {
+        val token = PreferencesManager.getToken(context) ?: return
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.whoAmI()
 
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                }
+            }
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast( "Error: ${t.message}")
+            }
+        })
+    }
     private fun showPopupMenu(view: View, groupId: Long?) {
         val popup = PopupMenu(context, view)
 
         val menu = popup.menu
         menu.add(0, R.id.edit, 1, context.getString(R.string.edit_group))
-        menu.add(0, R.id.delete, 2, context.getString(R.string.suspend_group))
+        if (currentUser?.type == EUserType.ADMIN) {
+            menu.add(0, R.id.delete, 2, context.getString(R.string.suspend_group))
+        }
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.edit -> {
-                    Toast.makeText(context, "Edit Group clicked", Toast.LENGTH_SHORT).show()
                     true
                 }
                 R.id.delete -> {
@@ -78,4 +123,10 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
 
         popup.show()
     }
+    private fun showToast(message: String) {
+        currentToast?.cancel()
+        currentToast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
+        currentToast?.show()
+    }
+
 }

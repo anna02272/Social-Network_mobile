@@ -3,6 +3,7 @@ package com.example.socialnetwork.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -19,6 +20,11 @@ import com.example.socialnetwork.adapters.GroupAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.CreateGroupRequest
 import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.model.entity.GroupRequest
+import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.services.GroupRequestService
+import com.example.socialnetwork.services.GroupService
+import com.example.socialnetwork.services.UserService
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -26,9 +32,11 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.LocalDateTime
 
 class GroupsActivity : AppCompatActivity(),
-    GroupAdapter.DeleteButtonClickListener {
+    GroupAdapter.DeleteButtonClickListener,
+    GroupAdapter.GroupRequestButtonClickListener{
 
     private lateinit var dimBackgroundView: View
     private lateinit var createGroupPopup: RelativeLayout
@@ -44,11 +52,17 @@ class GroupsActivity : AppCompatActivity(),
     private lateinit var suspendErrorMessage: TextView
     private var groupIdToSuspend: Long? = null
     private var currentToast: Toast? = null
+    private lateinit var groupService: GroupService
+    private lateinit var groupRequestService: GroupRequestService
+    private lateinit var userService: UserService
+    private var token: String? = null
+    private var currentUser: User? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_groups)
 
-        val token = PreferencesManager.getToken(this)
+        token = PreferencesManager.getToken(this)
         if (token == null) {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
@@ -60,8 +74,12 @@ class GroupsActivity : AppCompatActivity(),
 
         initializeViews()
 
-        fetchGroupsFromServer(token)
-    }
+        initializeServices()
+
+        fetchUserData()
+
+        fetchGroupsFromServer()
+        }
     private fun initializeViews() {
         dimBackgroundView = findViewById(R.id.dimBackgroundView)
         createGroupPopup = findViewById(R.id.createGroupPopup)
@@ -83,6 +101,13 @@ class GroupsActivity : AppCompatActivity(),
         popupSuspendGroupButton.setOnClickListener { groupIdToSuspend?.let {
             suspendGroup(it)
         } }
+    }
+
+    private fun initializeServices() {
+        val token = PreferencesManager.getToken(this) ?: return
+        groupService = ClientUtils.getGroupService(token)
+        userService = ClientUtils.getUserService(token)
+        groupRequestService = ClientUtils.getGroupRequestService(token)
     }
     private fun setupBottomNavigation() {
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -131,8 +156,7 @@ class GroupsActivity : AppCompatActivity(),
             }
         }
     }
-    private fun fetchGroupsFromServer(token: String) {
-        val groupService = ClientUtils.getGroupService(token)
+    private fun fetchGroupsFromServer() {
         val call = groupService.getAll()
 
         call.enqueue(object : Callback<ArrayList<Group>> {
@@ -156,6 +180,23 @@ class GroupsActivity : AppCompatActivity(),
             }
         })
     }
+    private fun fetchUserData() {
+        val call = userService.whoAmI()
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                }
+            }
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast( "Error: ${t.message}")
+            }
+        })
+    }
     private fun handleTokenExpired() {
         PreferencesManager.clearToken(this)
         val intent = Intent(this, LoginActivity::class.java)
@@ -171,6 +212,7 @@ class GroupsActivity : AppCompatActivity(),
         val listView: ListView = findViewById(R.id.groupsListView)
         val adapter = GroupAdapter(this, groups)
         adapter.deleteButtonClickListener = this
+        adapter.groupRequestButtonClickListener = this
         listView.adapter = adapter
     }
     private fun showGroupPopup() {
@@ -187,6 +229,10 @@ class GroupsActivity : AppCompatActivity(),
             showSuspendPopup(groupId)
         }
     }
+    override fun onGroupRequestButtonClick(group: Group) {
+        joinGroup(group)
+    }
+
     private fun hideGroupPopup() {
         dimBackgroundView.visibility = View.GONE
         createGroupPopup.visibility = View.GONE
@@ -239,8 +285,6 @@ class GroupsActivity : AppCompatActivity(),
             description = description
         )
 
-        val token = PreferencesManager.getToken(this) ?: return
-        val groupService = ClientUtils.getGroupService(token)
         val call = groupService.create(newGroup)
 
         call.enqueue(object : Callback<Group> {
@@ -248,7 +292,7 @@ class GroupsActivity : AppCompatActivity(),
                 if (response.isSuccessful) {
                     showToast("Group created successfully")
                     hideGroupPopup()
-                    fetchGroupsFromServer(token)
+                    token?.let { fetchGroupsFromServer() }
                 } else {
                     handleError(response)
                 }
@@ -256,6 +300,42 @@ class GroupsActivity : AppCompatActivity(),
 
             override fun onFailure(call: Call<Group>, t: Throwable) {
                 showCreateGroupValidationError("Error: ${t.message}")
+            }
+        })
+    }
+    private fun joinGroup(group: Group?) {
+        if (currentUser == null || group == null) {
+            Log.d("GroupsActivity", "User or Group information is missing. User: $currentUser, Group: $group")
+            showToast("User or Group information is missing")
+            return
+        }
+
+        val groupRequest = GroupRequest(
+            id = null,
+            approved = false,
+            created_at = LocalDateTime.now(),
+            user = currentUser!!,
+            group = group,
+        )
+        Log.d("GroupsActivity", "Sending group request: $groupRequest")
+
+
+        val call = groupRequestService.createGroupRequest(group.id!!, groupRequest)
+        call.enqueue(object : Callback<GroupRequest> {
+            override fun onResponse(call: Call<GroupRequest>, response: Response<GroupRequest>) {
+                if (response.isSuccessful) {
+                    Log.d("GroupsActivity", "Group request sent successfully. Response: ${response.body()}")
+                    showToast("Group request sent successfully")
+                } else {
+                    Log.d("GroupsActivity", "Failed to send group request. Response code: ${response.code()}")
+
+                    showToast("Failed to send group request")
+                }
+            }
+
+            override fun onFailure(call: Call<GroupRequest>, t: Throwable) {
+                Log.d("GroupsActivity", "Error sending group request: ${t.message}")
+                showToast("Error: ${t.message}")
             }
         })
     }
@@ -290,8 +370,6 @@ class GroupsActivity : AppCompatActivity(),
 
         val reasonPart = reason.toRequestBody("text/plain".toMediaTypeOrNull())
 
-        val token = PreferencesManager.getToken(this) ?: return
-        val groupService = ClientUtils.getGroupService(token)
         val call = groupService.delete(groupId, reasonPart)
 
         call.enqueue(object : Callback<Group> {
@@ -299,7 +377,7 @@ class GroupsActivity : AppCompatActivity(),
                 if (response.isSuccessful) {
                     showToast("Group suspended successfully")
                     hideSuspendPopup()
-                    fetchGroupsFromServer(token)
+                    token?.let { fetchGroupsFromServer() }
                 } else {
                     showSuspendValidationError("Failed to suspend group")
                 }
