@@ -7,9 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.FriendRequest
+import com.example.socialnetwork.utils.CircleTransform
+import com.google.firebase.FirebaseApp
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 
 class FriendRequestAdapter(
     context: Context,
@@ -17,7 +23,17 @@ class FriendRequestAdapter(
     private val acceptButtonText: String? = null,
     private val deleteButtonText: String? = null) :
     ArrayAdapter<FriendRequest>(context, R.layout.fragment_report, friendRequest) {
+    private lateinit var storageReference: StorageReference
+    init {
+        initializeFirebaseStorage()
+    }
 
+    private fun initializeFirebaseStorage() {
+        if (FirebaseApp.getApps(context).isEmpty()) {
+            FirebaseApp.initializeApp(context)
+        }
+        storageReference = FirebaseStorage.getInstance().reference
+    }
     interface AcceptButtonClickListener {
         fun onAcceptButtonClick(friendRequestId: Long)
     }
@@ -33,7 +49,7 @@ class FriendRequestAdapter(
         val friendRequest: FriendRequest? = getItem(position)
 
         if (view == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.fragment_report, parent, false)
+            view = LayoutInflater.from(context).inflate(R.layout.fragment_request, parent, false)
         }
 
         val userTextView = view!!.findViewById<TextView>(R.id.userTextView)
@@ -44,11 +60,16 @@ class FriendRequestAdapter(
         val reasonTextView = view.findViewById<TextView>(R.id.reasonTextView)
         val acceptButton = view.findViewById<Button>(R.id.acceptButton)
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
+        val profileImageView = view.findViewById<ImageView>(R.id.requestProfileImage)
 
         friendRequest?.let {
             try {
-                userTextView.text = it.fromUser.firstName + " " + it.fromUser.lastName
+                val fullName = context.getString(R.string.user_full_name, it.fromUser.firstName, it.fromUser.lastName)
+                userTextView.text = fullName
                 dateTextView.text = it.created_at.toString()
+                it.fromUser.id?.let { userId ->
+                    loadProfileImage(userId, profileImageView)
+                }
 
                 reportContentTextView.visibility = View.GONE
                 reasonContentTextView.visibility = View.GONE
@@ -81,4 +102,13 @@ class FriendRequestAdapter(
 
         return view
     }
+    private fun loadProfileImage(userId: Long, profileImageView: ImageView) {
+        val ref = storageReference.child("profile_images/$userId")
+        ref.downloadUrl.addOnSuccessListener { uri ->
+            Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
+        }.addOnFailureListener {
+            profileImageView.setImageResource(R.drawable.smiley_circle)
+        }
+    }
+
 }

@@ -58,7 +58,7 @@
                     android:background="@drawable/image_border">
 
                     <ImageView
-                        android:id="@+id/popupProfileImage"
+                        android:id="@+id/popupPostProfileImage"
                         android:layout_width="50dp"
                         android:layout_height="50dp"
                         android:src="@drawable/smiley_circle"
@@ -71,7 +71,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/usernameTextView"
+                        android:id="@+id/usernamePostTextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/username"

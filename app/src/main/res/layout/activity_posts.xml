@@ -31,7 +31,7 @@
                 android:background="@drawable/image_border">
 
                 <ImageView
-                    android:id="@+id/profileImage"
+                    android:id="@+id/postProfileImage"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:src="@drawable/smiley_circle"

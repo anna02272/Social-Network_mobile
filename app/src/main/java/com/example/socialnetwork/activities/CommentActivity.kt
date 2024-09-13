@@ -6,9 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.RelativeLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -22,16 +26,23 @@ import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Comment
 import com.example.socialnetwork.model.entity.CreateCommentRequest
 import com.example.socialnetwork.model.entity.EReactionType
+import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Reaction
+import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.services.CommentService
 import com.example.socialnetwork.services.ReactionService
 import com.example.socialnetwork.services.ReportService
 import com.example.socialnetwork.services.UserService
+import com.example.socialnetwork.utils.CircleTransform
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.firebase.FirebaseApp
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -56,7 +67,8 @@ class CommentActivity : BottomSheetDialogFragment(),
        private lateinit var userService: UserService
        private lateinit var reportService: ReportService
        private var currentUser: User? = null
-
+       private lateinit var dimBackgroundView: View
+       private lateinit var storageReference: StorageReference
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -102,14 +114,15 @@ class CommentActivity : BottomSheetDialogFragment(),
         }
 
         fetchUserData()
+        initializeFirebaseStorage()
 
         contentEditText = view.findViewById(R.id.contentEditText)
         errorMessage = view.findViewById(R.id.errorMessage)
+        dimBackgroundView = view.findViewById(R.id.dimBackgroundView)
 
         view.findViewById<Button>(R.id.createCommentButton).setOnClickListener {
             postId?.let { it1 -> createComment(it1) }
         }
-
     }
        private fun initializeServices() {
            commentService = ClientUtils.getCommentService(token)
@@ -117,6 +130,14 @@ class CommentActivity : BottomSheetDialogFragment(),
            userService = ClientUtils.getUserService(token)
            reportService = ClientUtils.getReportService(token)
        }
+
+       private fun initializeFirebaseStorage() {
+           if (FirebaseApp.getApps(requireContext()).isEmpty()) {
+               FirebaseApp.initializeApp(requireContext())
+           }
+           storageReference = FirebaseStorage.getInstance().reference
+       }
+
        override fun onReplyButtonClick(comment: Comment) {
            TODO("Not yet implemented")
        }
@@ -130,7 +151,7 @@ class CommentActivity : BottomSheetDialogFragment(),
        }
 
        override fun onReportButtonClick(comment: Comment) {
-           TODO("Not yet implemented")
+           showReportPopup(comment)
        }
 
        override fun onLikeButtonClick(comment: Comment, view: View) {
@@ -191,6 +212,12 @@ class CommentActivity : BottomSheetDialogFragment(),
                        val user = response.body()
                        if (user != null) {
                            currentUser = user
+                           val profileImage = view?.findViewById<ImageView>(R.id.profileImage)
+                               user.id?.let {
+                                   if (profileImage != null) {
+                                       loadProfileImage(it, profileImage)
+                                   }
+                               }
                        }
                    } else {
                    }
@@ -248,16 +275,17 @@ class CommentActivity : BottomSheetDialogFragment(),
         })
     }
        private fun deleteComment(comment: Comment){
-           comment.id?.let { commentId ->
+           comment.id.let { commentId ->
                commentService.delete(commentId).enqueue(object : Callback<Comment> {
                    override fun onResponse(call: Call<Comment>, response: Response<Comment>) {
                        if (response.isSuccessful) {
                            showToast("Comment deleted successfully")
                            token?.let { fetchCommentsFromServer(comment.post.id) }
                        } else {
-                           showToast("Failed to delete post: ${response.message()}")
+                           showToast("Failed to delete comment: ${response.message()}")
                        }
                    }
+
                    override fun onFailure(call: Call<Comment>, t: Throwable) {
                        showToast("Error: ${t.message}")
                    }
@@ -289,7 +317,111 @@ class CommentActivity : BottomSheetDialogFragment(),
                    }
                })
        }
-    private fun handleError(response: Response<Comment>) {
+
+       private fun showReportPopup(comment: Comment) {
+           val reportPopup = view?.findViewById<RelativeLayout>(R.id.createReportPopup)
+           val popupProfileImage = view?.findViewById<ImageView>(R.id.popupProfileImage)
+           val usernameTextView = view?.findViewById<TextView>(R.id.usernameReportTextView)
+
+           if (reportPopup != null) {
+               reportPopup.visibility = View.VISIBLE
+           }
+           dimBackgroundView.visibility = View.VISIBLE
+
+           view?.findViewById<ImageView>(R.id.closeReportPopupButton)?.setOnClickListener {
+               if (reportPopup != null) {
+                   reportPopup.visibility = View.GONE
+               }
+               dimBackgroundView.visibility = View.GONE
+           }
+
+           dimBackgroundView.setOnClickListener {
+               if (reportPopup != null) {
+                   reportPopup.visibility = View.GONE
+               }
+               dimBackgroundView.visibility = View.GONE
+           }
+
+           currentUser?.let { user ->
+               if (usernameTextView != null) {
+                   usernameTextView.text = user.profileName?.takeIf { it.isNotEmpty() } ?: user.username
+               }
+               popupProfileImage?.let { imageView ->
+                   user.id?.let { loadProfileImage(it, imageView) }
+               }
+           }
+
+           fillReportSpinner()
+
+           view?.findViewById<Button>(R.id.popupCreateReportButton)?.setOnClickListener {
+               submitReport(comment)
+           }
+       }
+
+       private fun fillReportSpinner() {
+           val reportReasons = EReportReason.values().map { it.name.replace('_', ' ') }
+
+           val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, reportReasons)
+           spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+           view?.findViewById<Spinner>(R.id.popupReasonSpinner)?.let { reasonSpinner ->
+               reasonSpinner.adapter = spinnerAdapter
+               reasonSpinner.setSelection(0)
+           }
+       }
+
+       private fun submitReport(comment: Comment) {
+           view?.findViewById<Spinner>(R.id.popupReasonSpinner)?.let { reasonSpinner ->
+               val selectedReason = reasonSpinner.selectedItem.toString()
+               val reason = EReportReason.valueOf(selectedReason.replace(' ', '_'))
+
+               val report = currentUser?.let {
+                   Report(
+                       id = 0,
+                       reason = reason,
+                       timestamp = LocalDate.now(),
+                       accepted = false,
+                       isDeleted = false,
+                       user = it,
+                       post = null,
+                       comment = comment,
+                       reportedUser = null
+                   )
+               }
+
+               comment.id?.let { commentId ->
+                   if (report != null) {
+                       reportService.reportComment(commentId, report).enqueue(object : Callback<Report> {
+                           override fun onResponse(call: Call<Report>, response: Response<Report>) {
+                               if (response.isSuccessful) {
+                                   showToast("Report submitted successfully")
+
+                                   view?.findViewById<RelativeLayout>(R.id.createReportPopup)?.visibility = View.GONE
+                                   dimBackgroundView.visibility = View.GONE
+                               } else {
+                                   showToast("Failed to submit report: ${response.message()}")
+                               }
+                           }
+
+                           override fun onFailure(call: Call<Report>, t: Throwable) {
+                               showToast("Error: ${t.message}")
+                           }
+                       })
+                   }
+               }
+           }
+       }
+
+       private fun loadProfileImage(userId: Long, profileImageView: ImageView) {
+           val ref = storageReference!!.child("profile_images/$userId")
+           ref.downloadUrl.addOnSuccessListener { uri ->
+               Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
+           }.addOnFailureListener {
+               profileImageView.setImageResource(R.drawable.smiley_circle)
+           }
+       }
+
+       private fun handleError(response: Response<Comment>) {
         val errorBody = response.errorBody()?.string() ?: "Unknown error"
         errorMessage.text = "Creating comment failed: $errorBody"
         errorMessage.visibility = View.VISIBLE

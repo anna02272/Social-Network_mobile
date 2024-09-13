@@ -42,11 +42,13 @@ import com.example.socialnetwork.services.PostService
 import com.example.socialnetwork.services.ReactionService
 import com.example.socialnetwork.services.ReportService
 import com.example.socialnetwork.services.UserService
+import com.example.socialnetwork.utils.CircleTransform
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -286,6 +288,18 @@ class PostsActivity : AppCompatActivity(),
                 handleEditPost(post.id)
             }
         }
+
+        val popupProfileImage = findViewById<ImageView>(R.id.popupPostProfileImage)
+        val usernameTextView = findViewById<TextView>(R.id.usernamePostTextView)
+
+        currentUser?.let { user ->
+            usernameTextView.text = user.profileName?.takeIf { it.isNotEmpty() } ?: user.username
+
+            popupProfileImage?.let { imageView ->
+                user.id?.let { loadProfileImage(it, imageView) }
+            }
+        }
+
     }
 
     private fun dismissPostPopup() {
@@ -305,6 +319,8 @@ class PostsActivity : AppCompatActivity(),
         val reportPopup = findViewById<RelativeLayout>(R.id.createReportPopup)
         val closeButton = findViewById<ImageView>(R.id.closeReportPopupButton)
         val createButton = findViewById<Button>(R.id.popupCreateReportButton)
+        val popupProfileImage = findViewById<ImageView>(R.id.popupProfileImage)
+        val usernameTextView = findViewById<TextView>(R.id.usernameReportTextView)
 
         reportPopup.visibility = View.VISIBLE
         dimBackgroundView.visibility = View.VISIBLE
@@ -317,6 +333,15 @@ class PostsActivity : AppCompatActivity(),
         dimBackgroundView.setOnClickListener {
             reportPopup.visibility = View.GONE
             dimBackgroundView.visibility = View.GONE
+        }
+
+        currentUser?.let { user ->
+            if (usernameTextView != null) {
+                usernameTextView.text = user.profileName?.takeIf { it.isNotEmpty() } ?: user.username
+            }
+            popupProfileImage?.let { imageView ->
+                user.id?.let { loadProfileImage(it, imageView) }
+            }
         }
 
         fillReportSpinner()
@@ -385,6 +410,12 @@ class PostsActivity : AppCompatActivity(),
                     val user = response.body()
                     if (user != null) {
                         currentUser = user
+                        val profileImage = findViewById<ImageView>(R.id.postProfileImage)
+                        user.id?.let {
+                            if (profileImage != null) {
+                                loadProfileImage(it, profileImage)
+                            }
+                        }
                     }
                 } else {
                 }
@@ -394,6 +425,15 @@ class PostsActivity : AppCompatActivity(),
                 showToast("Error: ${t.message}")
             }
         })
+    }
+
+    private fun loadProfileImage(userId: Long, profileImageView: ImageView) {
+        val ref = storageReference.child("profile_images/$userId")
+        ref.downloadUrl.addOnSuccessListener { uri ->
+            Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
+        }.addOnFailureListener {
+            profileImageView.setImageResource(R.drawable.smiley_circle)
+        }
     }
 
     private fun handleTokenExpired() {

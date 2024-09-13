@@ -7,9 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Report
+import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.utils.CircleTransform
+import com.google.firebase.FirebaseApp
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 
 class ReportAdapter(
     context: Context,
@@ -19,7 +26,18 @@ class ReportAdapter(
     private val acceptButtonText: String? = null,
     private val deleteButtonText: String? = null) :
     ArrayAdapter<Report>(context, R.layout.fragment_report, reports) {
+    private lateinit var storageReference: StorageReference
 
+    init {
+        initializeFirebaseStorage()
+    }
+
+    private fun initializeFirebaseStorage() {
+        if (FirebaseApp.getApps(context).isEmpty()) {
+            FirebaseApp.initializeApp(context)
+        }
+        storageReference = FirebaseStorage.getInstance().reference
+    }
     interface AcceptButtonClickListener {
         fun onAcceptButtonClick(report: Report)
     }
@@ -38,6 +56,7 @@ class ReportAdapter(
             view = LayoutInflater.from(context).inflate(R.layout.fragment_report, parent, false)
         }
 
+        val profileImageView: ImageView = view!!.findViewById(R.id.reportProfileImage)
         val userTextView = view!!.findViewById<TextView>(R.id.userTextView)
         val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
         val reportContentTextView = view.findViewById<TextView>(R.id.reportContentTextView)
@@ -47,8 +66,11 @@ class ReportAdapter(
         val acceptButton = view.findViewById<Button>(R.id.acceptButton)
         val deleteButton = view.findViewById<Button>(R.id.deleteButton)
 
+
         report?.let {
             try {
+                it.user.id?.let { it1 -> loadProfileImage(it1, profileImageView) }
+
                 userTextView.text = it.user.username
                 dateTextView.text = it.timestamp.toString()
 
@@ -110,5 +132,14 @@ class ReportAdapter(
         }
 
         return view
+    }
+
+    private fun loadProfileImage(userId: Long, profileImageView: ImageView) {
+        val ref = storageReference!!.child("profile_images/$userId")
+        ref.downloadUrl.addOnSuccessListener { uri ->
+            Picasso.get().load(uri).transform(CircleTransform()).into(profileImageView)
+        }.addOnFailureListener {
+            profileImageView.setImageResource(R.drawable.smiley_circle)
+        }
     }
 }
