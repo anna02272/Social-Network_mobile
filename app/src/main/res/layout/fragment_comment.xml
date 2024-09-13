@@ -66,15 +66,35 @@
             android:contentDescription="@string/more_options"/>
     </LinearLayout>
 
-
-    <TextView
-        android:id="@+id/contentTextView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/post_content"
-        android:textSize="15sp"
-        android:padding="8dp"
-        android:background="@drawable/rounded_grey_background"/>
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/commentContentEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_margin="2dp"
+            android:hint="@string/comment_content"
+            android:background="@drawable/rounded_grey_background"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:clickable="false"/>
+
+        <Button
+            android:id="@+id/updateButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/update_comment"
+            android:textColor="@color/vector_fill"
+            android:backgroundTint="@color/yellow"
+            android:visibility="gone"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

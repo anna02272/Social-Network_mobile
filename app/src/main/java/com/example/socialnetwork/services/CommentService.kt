@@ -24,7 +24,7 @@ interface CommentService {
     @PUT("comments/update/{id}")
     fun update(
         @Path("id") id: Long,
-        @Body comment: Comment
+        @Body comment: CreateCommentRequest
     ): Call<Comment>
 
     @Headers(

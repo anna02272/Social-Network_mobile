@@ -69,6 +69,7 @@ class CommentActivity : BottomSheetDialogFragment(),
        private var currentUser: User? = null
        private lateinit var dimBackgroundView: View
        private lateinit var storageReference: StorageReference
+       private var commentToEdit: Comment? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -123,6 +124,7 @@ class CommentActivity : BottomSheetDialogFragment(),
         view.findViewById<Button>(R.id.createCommentButton).setOnClickListener {
             postId?.let { it1 -> createComment(it1) }
         }
+
     }
        private fun initializeServices() {
            commentService = ClientUtils.getCommentService(token)
@@ -142,8 +144,9 @@ class CommentActivity : BottomSheetDialogFragment(),
            TODO("Not yet implemented")
        }
 
-       override fun onEditButtonClick(comment: Comment) {
-           TODO("Not yet implemented")
+       override fun onEditButtonClick(comment: Comment, updateButton: Button, commentContentEditText: EditText) {
+           commentToEdit = comment
+           setupEditView(updateButton, commentContentEditText)
        }
 
        override fun onDeleteButtonClick(comment: Comment) {
@@ -213,13 +216,12 @@ class CommentActivity : BottomSheetDialogFragment(),
                        if (user != null) {
                            currentUser = user
                            val profileImage = view?.findViewById<ImageView>(R.id.profileImage)
-                               user.id?.let {
-                                   if (profileImage != null) {
-                                       loadProfileImage(it, profileImage)
-                                   }
+                           user.id?.let {
+                               if (profileImage != null) {
+                                   loadProfileImage(it, profileImage)
                                }
+                           }
                        }
-                   } else {
                    }
                }
 
@@ -236,13 +238,15 @@ class CommentActivity : BottomSheetDialogFragment(),
         activity?.finish()
     }
 
-    private fun showToast(message: String) {
-        currentToast?.cancel()
-        currentToast = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT)
-        currentToast?.show()
-    }
+       private fun showToast(message: String) {
+           context?.let {
+               currentToast?.cancel()
+               currentToast = Toast.makeText(it, message, Toast.LENGTH_SHORT)
+               currentToast?.show()
+           }
+       }
 
-    private fun createComment(postId: Long) {
+       private fun createComment(postId: Long) {
         val text = contentEditText.text.toString().trim()
 
         if (text.isEmpty()) {
@@ -274,6 +278,57 @@ class CommentActivity : BottomSheetDialogFragment(),
             }
         })
     }
+       private fun setupEditView(updateButton: Button, commentContentEditText: EditText) {
+           commentContentEditText.isFocusable = true
+           commentContentEditText.isFocusableInTouchMode = true
+           commentContentEditText.isClickable = true
+           commentContentEditText.requestFocus()
+           updateButton.visibility = View.VISIBLE
+
+           commentToEdit?.let {
+               commentContentEditText.setText(it.text)
+           }
+
+           updateButton.setOnClickListener {
+               onUpdateButtonClick(commentContentEditText, updateButton)
+           }
+       }
+       private fun onUpdateButtonClick(commentContentEditText: EditText, updateButton: Button) {
+           val updatedText = commentContentEditText.text.toString().trim()
+
+           if (updatedText.isEmpty()) {
+               showValidationError("Text cannot be empty")
+               commentContentEditText.background =
+                   ContextCompat.getDrawable(requireContext(), R.drawable.rounded_grey_background_red_border)
+               return
+           }
+
+           val updatedComment = CreateCommentRequest(
+               text = updatedText
+           )
+
+           commentToEdit?.let { comment ->
+               commentService.update(comment.id, updatedComment).enqueue(object : Callback<Comment> {
+                   override fun onResponse(call: Call<Comment>, response: Response<Comment>) {
+                       if (response.isSuccessful) {
+                           showToast("Comment updated successfully")
+                           commentContentEditText.isFocusable = false
+                           commentContentEditText.isFocusableInTouchMode = false
+                           commentContentEditText.isClickable = false
+                           updateButton.visibility = View.GONE
+                           resetUI()
+                           fetchCommentsFromServer(comment.post.id)
+                       } else {
+                           handleError(response)
+                       }
+                   }
+
+                   override fun onFailure(call: Call<Comment>, t: Throwable) {
+                       showValidationError("Error: ${t.message}")
+                   }
+               })
+           }
+       }
        private fun deleteComment(comment: Comment){
            comment.id.let { commentId ->
                commentService.delete(commentId).enqueue(object : Callback<Comment> {

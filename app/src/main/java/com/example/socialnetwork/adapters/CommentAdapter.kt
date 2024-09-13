@@ -4,6 +4,8 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupMenu
@@ -36,6 +38,7 @@ class CommentAdapter(
     private lateinit var storageReference: StorageReference
     private var currentUser: User? = null
     private var currentToast: Toast? = null
+
     init {
         initializeFirebaseStorage()
         fetchUserData(object : UserCallback {
@@ -60,7 +63,7 @@ class CommentAdapter(
     }
 
     interface EditButtonClickListener {
-        fun onEditButtonClick(comment: Comment)
+        fun onEditButtonClick(comment: Comment, updateButton: Button, commentContentEditText: EditText)
     }
     interface DeleteButtonClickListener {
         fun onDeleteButtonClick(comment: Comment)
@@ -93,7 +96,8 @@ class CommentAdapter(
         val profileImageView: ImageView = itemView.findViewById(R.id.profileImage)
         val usernameTextView: TextView = itemView.findViewById(R.id.usernameTextView)
         val dateTextView: TextView = itemView.findViewById(R.id.dateTextView)
-        val contentTextView: TextView = itemView.findViewById(R.id.contentTextView)
+        val commentContentEditText: EditText = itemView.findViewById(R.id.commentContentEditText)
+        val updateButton: Button = itemView.findViewById(R.id.updateButton)
         val moreOptionsButton: ImageButton = itemView.findViewById(R.id.moreOptionsButton)
         val likeButton: ImageButton = itemView.findViewById(R.id.likeButton)
         val dislikeButton: ImageButton = itemView.findViewById(R.id.dislikeButton)
@@ -115,11 +119,11 @@ class CommentAdapter(
         holder.usernameTextView.text = comment.user?.profileName?.takeIf { it.isNotEmpty() } ?: comment.user?.username
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
         holder.dateTextView.text = comment.timeStamp.format(formatter)
-        holder.contentTextView.text = comment.text
+        holder.commentContentEditText.setText(comment.text)
 
 
         holder.moreOptionsButton.setOnClickListener { view ->
-            showPopupMenu(view, comment)
+            showPopupMenu(view, comment, holder.updateButton, holder.commentContentEditText)
         }
 
         setupButtons(holder, comment)
@@ -266,7 +270,10 @@ class CommentAdapter(
 
     override fun getItemCount(): Int = comments.size
 
-    private fun showPopupMenu(view: View, comment: Comment) {
+    private fun showPopupMenu(view: View,
+                              comment: Comment,
+                              updateButton: Button,
+                              commentContentEditText: EditText) {
         val popup = PopupMenu(context, view)
 
         val menu = popup.menu
@@ -283,7 +290,7 @@ class CommentAdapter(
                     true
                 }
                 R.id.edit -> {
-                    editButtonClickListener?.onEditButtonClick(comment)
+                    editButtonClickListener?.onEditButtonClick(comment,updateButton, commentContentEditText)
                     true
                 }
                 R.id.delete -> {
