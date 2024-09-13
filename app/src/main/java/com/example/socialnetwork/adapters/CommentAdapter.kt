@@ -12,6 +12,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.clients.ClientUtils
@@ -105,6 +106,7 @@ class CommentAdapter(
         val likeCountTextView: TextView = itemView.findViewById(R.id.likeCountTextView)
         val dislikeCountTextView: TextView = itemView.findViewById(R.id.dislikeCountTextView)
         val heartCountTextView: TextView = itemView.findViewById(R.id.heartCountTextView)
+        val repliesRecyclerView: RecyclerView = itemView.findViewById(R.id.repliesRecyclerView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -128,8 +130,23 @@ class CommentAdapter(
 
         setupButtons(holder, comment)
         setupReactions(holder, comment)
-    }
 
+        if (comment.replies.isNotEmpty()) {
+            holder.repliesRecyclerView.layoutManager = LinearLayoutManager(context)
+            val repliesAdapter = CommentAdapter(context, comment.replies)
+            repliesAdapter.replyButtonClickListener = replyButtonClickListener
+            repliesAdapter.editButtonClickListener = editButtonClickListener
+            repliesAdapter.deleteButtonClickListener = deleteButtonClickListener
+            repliesAdapter.reportButtonClickListener = reportButtonClickListener
+            repliesAdapter.likeButtonClickListener = likeButtonClickListener
+            repliesAdapter.dislikeButtonClickListener = dislikeButtonClickListener
+            repliesAdapter.heartButtonClickListener = heartButtonClickListener
+            holder.repliesRecyclerView.adapter = repliesAdapter
+            holder.repliesRecyclerView.visibility = View.VISIBLE
+        } else {
+            holder.repliesRecyclerView.visibility = View.GONE
+        }
+    }
 
     private fun setupButtons(holder: CommentViewHolder, comment: Comment) {
         holder.likeButton.setOnClickListener { likeButtonClickListener?.onLikeButtonClick(comment, holder.itemView) }

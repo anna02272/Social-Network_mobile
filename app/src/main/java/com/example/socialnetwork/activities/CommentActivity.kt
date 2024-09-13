@@ -207,7 +207,9 @@ class CommentActivity : BottomSheetDialogFragment(),
             ) {
                 if (response.isSuccessful) {
                     val comments = response.body() ?: listOf()
-                    updateRecyclerView(comments)
+                    val rootComments = comments.filter { it.parentComment == null }
+                    buildReplies(comments)
+                    updateRecyclerView(rootComments)
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
@@ -220,6 +222,14 @@ class CommentActivity : BottomSheetDialogFragment(),
             }
         })
     }
+       private fun buildReplies(comments: List<Comment>) {
+           val commentMap = comments.associateBy { it.id }
+           comments.forEach { comment ->
+               comment.parentComment?.let { parent ->
+                   commentMap[parent.id]?.replies = commentMap[parent.id]?.replies.orEmpty() + comment
+               }
+           }
+       }
        private fun fetchUserData() {
            val call = userService.whoAmI()
 

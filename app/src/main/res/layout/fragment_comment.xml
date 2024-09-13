@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="7dp">
+
+    <ImageButton
+        android:id="@+id/moreOptionsButton"
+        android:layout_width="50dp"
+        android:layout_height="10dp"
+        android:layout_gravity="end"
+        android:src="@drawable/more_options"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/more_options"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -56,14 +64,6 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/moreOptionsButton"
-            android:layout_width="50dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="200dp"
-            android:src="@drawable/more_options"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/more_options"/>
     </LinearLayout>
 
     <LinearLayout
@@ -99,9 +99,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="right"
         android:orientation="horizontal"
-        android:paddingTop="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
+
+        <ImageButton
+            android:id="@+id/likeButtonCount"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/thumb_up_blue"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/like_total"/>
+
+        <TextView
+            android:id="@+id/likeCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zero"
+            android:textSize="12sp"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="3dp"/>
+
+        <ImageButton
+            android:id="@+id/dislikeButtonCount"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/thumb_down_blue"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/dislike_total"/>
+
+        <TextView
+            android:id="@+id/dislikeCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zero"
+            android:textSize="12sp"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="3dp"/>
+
+        <ImageButton
+            android:id="@+id/heartButtonCount"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/heart_red"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/heart_total"/>
+
+        <TextView
+            android:id="@+id/heartCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zero"
+            android:textSize="12sp"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="3dp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:orientation="horizontal"
+        android:paddingBottom="2dp"
         android:paddingLeft="8dp"
         android:paddingRight="8dp">
 
@@ -156,59 +216,17 @@
             android:layout_marginRight="10dp"
             android:textSize="12sp"/>
 
-        <ImageButton
-            android:id="@+id/likeButtonCount"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/thumb_up_blue"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/like_total"/>
-
-        <TextView
-            android:id="@+id/likeCountTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/zero"
-            android:textSize="12sp"
-            android:layout_marginStart="1dp"
-            android:layout_marginEnd="3dp"/>
-
-        <ImageButton
-            android:id="@+id/dislikeButtonCount"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/thumb_down_blue"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/dislike_total"/>
-
-        <TextView
-            android:id="@+id/dislikeCountTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/zero"
-            android:textSize="12sp"
-            android:layout_marginStart="1dp"
-            android:layout_marginEnd="3dp"/>
-
-        <ImageButton
-            android:id="@+id/heartButtonCount"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/heart_red"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/heart_total"/>
-
-        <TextView
-            android:id="@+id/heartCountTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/zero"
-            android:textSize="12sp"
-            android:layout_marginStart="1dp"
-            android:layout_marginEnd="3dp"/>
-
-
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@android:color/darker_gray"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/repliesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp" />
 
 </LinearLayout>

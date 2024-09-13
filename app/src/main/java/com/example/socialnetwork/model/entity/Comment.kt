@@ -9,7 +9,7 @@ data class Comment(
     val isDeleted: Boolean,
     val user: User?,
     val post: Post,
-    val replies: List<Comment> = emptyList(),
+    var replies: List<Comment> = emptyList(),
     val parentComment: Comment,
     val reactions: List<Reaction> = emptyList(),
     val report: List<Report> = emptyList()
