@@ -30,9 +30,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.time.format.DateTimeFormatter
 
-class PostAdapter(private val mContext: Context, posts: ArrayList<Post>) :
+class PostAdapter(private val mContext: Context, posts: List<Post>) :
     ArrayAdapter<Post?>(mContext, 0, posts as List<Post?>) {
-    private val mPosts: ArrayList<Post> = ArrayList(posts)
     private lateinit var storageReference: StorageReference
     private var currentUser: User? = null
     private var currentToast: Toast? = null

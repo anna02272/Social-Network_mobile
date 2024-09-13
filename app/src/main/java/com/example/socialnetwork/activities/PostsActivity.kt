@@ -91,6 +91,8 @@ class PostsActivity : AppCompatActivity(),
     private lateinit var reportService: ReportService
     private lateinit var adapter: PostAdapter
     private var currentToast: Toast? = null
+    private lateinit var sortByDateButton: Button
+    private var sortingOrder = "descending"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -132,9 +134,10 @@ class PostsActivity : AppCompatActivity(),
         popupCreatePostButton = findViewById(R.id.popupCreatePostButton)
         selectedImages = mutableListOf()
         progressBar = findViewById(R.id.progressBar)
+        sortByDateButton = findViewById(R.id.sortByDateButton)
 
-        findViewById<Button>(R.id.sort).setOnClickListener {
-
+        sortByDateButton.setOnClickListener {
+            toggleSortingOrder()
         }
 
         findViewById<Button>(R.id.createPostButton).setOnClickListener {
@@ -363,14 +366,24 @@ class PostsActivity : AppCompatActivity(),
 
         reasonSpinner.setSelection(0)
     }
+    private fun toggleSortingOrder() {
+        sortingOrder = if (sortingOrder == "descending") "ascending" else "descending"
+        updateButtonText()
+        fetchPostsFromServer()
+    }
+
+    private fun updateButtonText() {
+        val newText = if (sortingOrder == "ascending") getString(R.string.ascending) else getString(R.string.descending)
+        sortByDateButton.text = newText
+    }
 
     private fun fetchPostsFromServer() {
-        val call = postService.getAll()
+        val call = if (sortingOrder == "ascending") postService.getAllAscending() else postService.getAllDescending()
 
-        call.enqueue(object : Callback<ArrayList<Post>> {
+        call.enqueue(object : Callback<List<Post>> {
             override fun onResponse(
-                call: Call<ArrayList<Post>>,
-                response: Response<ArrayList<Post>>
+                call: Call<List<Post>>,
+                response: Response<List<Post>>
             ) {
                 if (response.isSuccessful) {
                     val posts = response.body() ?: arrayListOf()
@@ -382,13 +395,13 @@ class PostsActivity : AppCompatActivity(),
                    }
             }
 
-            override fun onFailure(call: Call<ArrayList<Post>>, t: Throwable) {
+            override fun onFailure(call: Call<List<Post>>, t: Throwable) {
                 showToast("Error: ${t.message}")
             }
         })
     }
 
-    private fun updateListView(posts: ArrayList<Post>) {
+    private fun updateListView(posts: List<Post>) {
         val listView: ListView = findViewById(R.id.postsListView)
         adapter = PostAdapter(this, posts)
         adapter.commentButtonClickListener = this

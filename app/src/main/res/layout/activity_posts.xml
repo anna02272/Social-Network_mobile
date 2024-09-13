@@ -62,13 +62,15 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/sort"
+            android:id="@+id/sortByDateButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sort"
+            android:text="@string/descending"
+            android:textColor="@color/vector_fill"
             android:backgroundTint="@color/yellow"
-            android:layout_marginLeft="8dp"/>
-
+            android:layout_margin="1dp"
+            android:drawableLeft="@drawable/calendar"
+            />
 
         <View
             android:layout_width="match_parent"

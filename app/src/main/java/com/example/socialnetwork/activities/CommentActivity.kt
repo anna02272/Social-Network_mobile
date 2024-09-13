@@ -79,7 +79,7 @@ class CommentActivity : BottomSheetDialogFragment(),
        private lateinit var sortByLikesButton: Button
        private lateinit var sortByDislikesButton: Button
        private lateinit var sortByHeartsButton: Button
-       private var sortingOrder = "ascending"
+       private var sortingOrder = "descending"
        private var currentSortOption = "date"
 
        override fun onCreateView(
