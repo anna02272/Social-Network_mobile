@@ -60,6 +60,8 @@
     <string name="reply_to_comment">Reply To Comment</string>
     <string name="comment_content">Comment content</string>
     <string name="update_comment">Update</string>
+    <string name="ascending">asc</string>
+    <string name="descending">desc</string>
 
     <!-- Groups-->
     <string name="create_new_group">Create new group</string>
@@ -114,18 +116,5 @@
 
     <!-- Search -->
     <string name="add_friend">Add friend</string>
-
-    <!-- Confirmation dialog -->
-    <string name="confirm">Confirm</string>
-    <string name="cancel">Cancel</string>
-    <string name="confirm_delete_post">Are you sure you want to delete this post?</string>
-    <string name="confirm_delete_group">Are you sure you want to suspend this group?</string>
-    <string name="confirm_delete_friend_request">Are you sure you want to delete this friend request?</string>
-    <string name="confirm_unblock">Are you sure you want to unblock this user?</string>
-    <string name="confirm_block">Are you sure you want to block this user?</string>
-    <string name="confirm_delete_comment_report">Are you sure you want to delete this comment report?</string>
-    <string name="confirm_delete_user_report">Are you sure you want to delete this user report?</string>
-    <string name="confirm_delete_post_report">Are you sure you want to delete this post report?</string>
-
 
 </resources>

@@ -32,6 +32,61 @@
             android:layout_height="0.5dp"
             android:background="@android:color/darker_gray"/>
 
+    <LinearLayout
+        android:id="@+id/sortingBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/sortByDateButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/descending"
+                android:textColor="@color/vector_fill"
+                android:backgroundTint="@color/yellow"
+                android:layout_margin="1dp"
+                android:drawableLeft="@drawable/calendar"
+                />
+
+            <Button
+                android:id="@+id/sortByLikesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/descending"
+                android:textColor="@color/vector_fill"
+                android:backgroundTint="@color/yellow"
+                android:layout_margin="1dp"
+                android:drawableLeft="@drawable/thumb_up_blue"/>
+
+            <Button
+                android:id="@+id/sortByDislikesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/descending"
+                android:textColor="@color/vector_fill"
+                android:backgroundTint="@color/yellow"
+                android:layout_margin="1dp"
+                android:drawableLeft="@drawable/thumb_down_blue"/>
+
+            <Button
+                android:id="@+id/sortByHeartsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/descending"
+                android:textColor="@color/vector_fill"
+                android:backgroundTint="@color/yellow"
+                android:layout_margin="1dp"
+                android:drawableLeft="@drawable/heart_red"/>
+        </LinearLayout>
+    </LinearLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/commentsRecyclerView"
             android:layout_width="match_parent"

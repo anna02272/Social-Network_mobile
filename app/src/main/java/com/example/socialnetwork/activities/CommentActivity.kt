@@ -75,6 +75,12 @@ class CommentActivity : BottomSheetDialogFragment(),
        private lateinit var storageReference: StorageReference
        private var commentToEdit: Comment? = null
        private var parentComment: Comment? = null
+       private lateinit var sortByDateButton: Button
+       private lateinit var sortByLikesButton: Button
+       private lateinit var sortByDislikesButton: Button
+       private lateinit var sortByHeartsButton: Button
+       private var sortingOrder = "ascending"
+       private var currentSortOption = "date"
 
        override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -122,16 +128,34 @@ class CommentActivity : BottomSheetDialogFragment(),
 
         fetchUserData()
         initializeFirebaseStorage()
-
-        contentEditText = view.findViewById(R.id.contentEditText)
-        errorMessage = view.findViewById(R.id.errorMessage)
-        dimBackgroundView = view.findViewById(R.id.dimBackgroundView)
-
-        view.findViewById<Button>(R.id.createCommentButton).setOnClickListener {
-             postId?.let { it1 -> createComment(it1, parentComment) }
-        }
-
+        initializeViews(view)
     }
+       private fun initializeViews(view: View) {
+           contentEditText = view.findViewById(R.id.contentEditText)
+           errorMessage = view.findViewById(R.id.errorMessage)
+           dimBackgroundView = view.findViewById(R.id.dimBackgroundView)
+           sortByDateButton = view.findViewById(R.id.sortByDateButton)
+           sortByLikesButton = view.findViewById(R.id.sortByLikesButton)
+           sortByDislikesButton = view.findViewById(R.id.sortByDislikesButton)
+           sortByHeartsButton = view.findViewById(R.id.sortByHeartsButton)
+
+           sortByDateButton.setOnClickListener { postId?.let { it1 ->
+               toggleSortingOrder("date", it1)
+           } }
+           sortByLikesButton.setOnClickListener { postId?.let { it1 ->
+               toggleSortingOrder("likes", it1)
+           } }
+           sortByDislikesButton.setOnClickListener { postId?.let { it1 ->
+               toggleSortingOrder("dislikes", it1)
+           } }
+           sortByHeartsButton.setOnClickListener { postId?.let { it1 ->
+               toggleSortingOrder("hearts", it1)
+           } }
+
+           view.findViewById<Button>(R.id.createCommentButton).setOnClickListener {
+               postId?.let { it1 -> createComment(it1, parentComment) }
+           }
+       }
        private fun initializeServices() {
            commentService = ClientUtils.getCommentService(token)
            reactionService = ClientUtils.getReactionService(token)
@@ -196,32 +220,59 @@ class CommentActivity : BottomSheetDialogFragment(),
         adapter.heartButtonClickListener = this
         recyclerView.adapter = adapter
     }
+       private fun toggleSortingOrder(sortOption: String, postId: Long) {
+           currentSortOption = sortOption
+           sortingOrder = when (sortingOrder) {
+               "ascending" -> "descending"
+               "descending" -> "ascending"
+               "likesAscending" -> "likesDescending"
+               "likesDescending" -> "likesAscending"
+               "dislikesAscending" -> "dislikesDescending"
+               "dislikesDescending" -> "dislikesAscending"
+               "heartsAscending" -> "heartsDescending"
+               "heartsDescending" -> "heartsAscending"
+               else -> "ascending"
+           }
+           updateButtonText(sortOption)
+           fetchCommentsFromServer(postId)
+   }
+       private fun updateButtonText(sortOption: String) {
+           val newText = if (sortingOrder == "ascending") getString(R.string.ascending) else getString(R.string.descending)
+           when (sortOption) {
+               "date" -> sortByDateButton.text = newText
+               "likes" -> sortByLikesButton.text = newText
+               "dislikes" -> sortByDislikesButton.text = newText
+               "hearts" -> sortByHeartsButton.text = newText
+           }
+       }
+       private fun fetchCommentsFromServer(postId: Long) {
+           val call = when (currentSortOption) {
+               "date" -> if (sortingOrder == "ascending") commentService.getAllAscending(postId) else commentService.getAllDescending(postId)
+               "likes" -> if (sortingOrder == "ascending") commentService.getAllAscendingLikes(postId) else commentService.getAllDescendingLikes(postId)
+               "dislikes" -> if (sortingOrder == "ascending") commentService.getAllByAscendingDislikes(postId) else commentService.getAllByDescendingDislikes(postId)
+               "hearts" -> if (sortingOrder == "ascending") commentService.getAllByAscendingHearts(postId) else commentService.getAllByDescendingHearts(postId)
+               else -> commentService.getAllAscending(postId)
+           }
 
-    private fun fetchCommentsFromServer(postId: Long) {
-        val call = commentService.getCommentsByPostId(postId)
+           call.enqueue(object : Callback<List<Comment>> {
+               override fun onResponse(call: Call<List<Comment>>, response: Response<List<Comment>>) {
+                   if (response.isSuccessful) {
+                       val comments = response.body() ?: listOf()
+                       val rootComments = comments.filter { it.parentComment == null }
+                       buildReplies(comments)
+                       updateRecyclerView(rootComments)
+                   } else if (response.code() == 401) {
+                       handleTokenExpired()
+                   } else {
+                       showToast("Failed to load comments")
+                   }
+               }
 
-        call.enqueue(object : Callback<List<Comment>> {
-            override fun onResponse(
-                call: Call<List<Comment>>,
-                response: Response<List<Comment>>
-            ) {
-                if (response.isSuccessful) {
-                    val comments = response.body() ?: listOf()
-                    val rootComments = comments.filter { it.parentComment == null }
-                    buildReplies(comments)
-                    updateRecyclerView(rootComments)
-                } else if (response.code() == 401) {
-                    handleTokenExpired()
-                } else {
-                    showToast("Failed to load comments")
-                }
-            }
-
-            override fun onFailure(call: Call<List<Comment>>, t: Throwable) {
-                showToast("Error: ${t.message}")
-            }
-        })
-    }
+               override fun onFailure(call: Call<List<Comment>>, t: Throwable) {
+                   showToast("Error: ${t.message}")
+               }
+           })
+       }
        private fun buildReplies(comments: List<Comment>) {
            val commentMap = comments.associateBy { it.id }
            comments.forEach { comment ->
