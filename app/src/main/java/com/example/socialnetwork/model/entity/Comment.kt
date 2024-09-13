@@ -16,5 +16,6 @@ data class Comment(
 )
 
 data class CreateCommentRequest(
-    val text: String
+    val text: String,
+    val parentComment: Comment? = null
 )

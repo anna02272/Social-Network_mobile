@@ -290,7 +290,7 @@ class CommentAdapter(
                     true
                 }
                 R.id.edit -> {
-                    editButtonClickListener?.onEditButtonClick(comment,updateButton, commentContentEditText)
+                    editButtonClickListener?.onEditButtonClick(comment, updateButton, commentContentEditText)
                     true
                 }
                 R.id.delete -> {

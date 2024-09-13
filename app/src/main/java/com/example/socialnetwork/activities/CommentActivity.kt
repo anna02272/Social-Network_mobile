@@ -1,11 +1,15 @@
 package com.example.socialnetwork.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -70,7 +74,9 @@ class CommentActivity : BottomSheetDialogFragment(),
        private lateinit var dimBackgroundView: View
        private lateinit var storageReference: StorageReference
        private var commentToEdit: Comment? = null
-    override fun onCreateView(
+       private var parentComment: Comment? = null
+
+       override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
@@ -122,7 +128,7 @@ class CommentActivity : BottomSheetDialogFragment(),
         dimBackgroundView = view.findViewById(R.id.dimBackgroundView)
 
         view.findViewById<Button>(R.id.createCommentButton).setOnClickListener {
-            postId?.let { it1 -> createComment(it1) }
+             postId?.let { it1 -> createComment(it1, parentComment) }
         }
 
     }
@@ -141,7 +147,16 @@ class CommentActivity : BottomSheetDialogFragment(),
        }
 
        override fun onReplyButtonClick(comment: Comment) {
-           TODO("Not yet implemented")
+           contentEditText.requestFocus()
+           Handler(Looper.getMainLooper()).postDelayed({
+               showKeyboard(contentEditText)
+           }, 100)
+           parentComment = comment
+       }
+
+       private fun showKeyboard(view: View) {
+           val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+           imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
        }
 
        override fun onEditButtonClick(comment: Comment, updateButton: Button, commentContentEditText: EditText) {
@@ -181,7 +196,6 @@ class CommentActivity : BottomSheetDialogFragment(),
         adapter.heartButtonClickListener = this
         recyclerView.adapter = adapter
     }
-
 
     private fun fetchCommentsFromServer(postId: Long) {
         val call = commentService.getCommentsByPostId(postId)
@@ -246,7 +260,7 @@ class CommentActivity : BottomSheetDialogFragment(),
            }
        }
 
-       private fun createComment(postId: Long) {
+       private fun createComment(postId: Long, parentComment: Comment? = null) {
         val text = contentEditText.text.toString().trim()
 
         if (text.isEmpty()) {
@@ -257,10 +271,11 @@ class CommentActivity : BottomSheetDialogFragment(),
         }
 
         val comment = CreateCommentRequest(
-            text = text
+            text = text,
+            parentComment = parentComment
         )
 
-        val call = commentService.create(postId, comment)
+           val call = commentService.create(postId, comment)
 
         call.enqueue(object : Callback<Comment> {
             override fun onResponse(call: Call<Comment>, response: Response<Comment>) {
@@ -372,7 +387,6 @@ class CommentActivity : BottomSheetDialogFragment(),
                    }
                })
        }
-
        private fun showReportPopup(comment: Comment) {
            val reportPopup = view?.findViewById<RelativeLayout>(R.id.createReportPopup)
            val popupProfileImage = view?.findViewById<ImageView>(R.id.popupProfileImage)
@@ -412,7 +426,6 @@ class CommentActivity : BottomSheetDialogFragment(),
                submitReport(comment)
            }
        }
-
        private fun fillReportSpinner() {
            val reportReasons = EReportReason.values().map { it.name.replace('_', ' ') }
 
@@ -424,7 +437,6 @@ class CommentActivity : BottomSheetDialogFragment(),
                reasonSpinner.setSelection(0)
            }
        }
-
        private fun submitReport(comment: Comment) {
            view?.findViewById<Spinner>(R.id.popupReasonSpinner)?.let { reasonSpinner ->
                val selectedReason = reasonSpinner.selectedItem.toString()
@@ -466,7 +478,6 @@ class CommentActivity : BottomSheetDialogFragment(),
                }
            }
        }
-
        private fun loadProfileImage(userId: Long, profileImageView: ImageView) {
            val ref = storageReference!!.child("profile_images/$userId")
            ref.downloadUrl.addOnSuccessListener { uri ->
@@ -475,7 +486,6 @@ class CommentActivity : BottomSheetDialogFragment(),
                profileImageView.setImageResource(R.drawable.smiley_circle)
            }
        }
-
        private fun handleError(response: Response<Comment>) {
         val errorBody = response.errorBody()?.string() ?: "Unknown error"
         errorMessage.text = "Creating comment failed: $errorBody"
@@ -490,5 +500,6 @@ class CommentActivity : BottomSheetDialogFragment(),
             ContextCompat.getDrawable(requireContext(), R.drawable.rounded_grey_background)
         contentEditText.text.clear()
         errorMessage.visibility = View.GONE
+        parentComment = null
     }
    }
