@@ -113,6 +113,7 @@
     <string name="friends">Friends:</string>
     <string name="groups_profile">Groups:</string>
     <string name="save_changes">Save Changes</string>
+    <string name="report_user">Report user</string>
 
     <!-- Search -->
     <string name="add_friend">Add friend</string>

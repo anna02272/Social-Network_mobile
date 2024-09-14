@@ -2,6 +2,8 @@ package com.example.socialnetwork.adapters
 
 import ImagePagerAdapter
 import android.content.Context
+import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +16,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.socialnetwork.R
+import com.example.socialnetwork.activities.UserProfileActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReactionType
 import com.example.socialnetwork.model.entity.Post
@@ -141,6 +144,12 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
             dateTextView.text =
                 post.creationDate.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
             contentTextView.text = post.content
+
+            usernameTextView.setOnClickListener {
+                val intent = Intent(mContext, UserProfileActivity::class.java)
+                intent.putExtra("user", post.user)
+                mContext.startActivity(intent)
+            }
 
             loadPostImages(post.id, viewPager)
 

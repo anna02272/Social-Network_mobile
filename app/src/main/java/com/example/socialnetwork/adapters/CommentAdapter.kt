@@ -1,6 +1,7 @@
 package com.example.socialnetwork.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialnetwork.R
+import com.example.socialnetwork.activities.UserProfileActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Comment
 import com.example.socialnetwork.model.entity.EReactionType
@@ -126,6 +128,12 @@ class CommentAdapter(
 
         holder.moreOptionsButton.setOnClickListener { view ->
             showPopupMenu(view, comment, holder.updateButton, holder.commentContentEditText)
+        }
+
+        holder.usernameTextView.setOnClickListener {
+            val intent = Intent(context, UserProfileActivity::class.java)
+            intent.putExtra("user", comment.user)
+            context.startActivity(intent)
         }
 
         setupButtons(holder, comment)
