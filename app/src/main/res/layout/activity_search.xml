@@ -31,11 +31,14 @@
                 android:layout_weight="1"
                 android:background="@drawable/rounded_grey_background"
                 android:drawableLeft="@drawable/search_grey"
+                android:drawableRight="@drawable/close"
                 android:drawablePadding="8dp"
                 android:hint="@string/search"
                 android:padding="10dp"
                 android:layout_margin="5dp"
-                />
+                android:focusableInTouchMode="true"
+                android:clickable="true"
+                android:focusable="true" />
 
     </LinearLayout>
 
