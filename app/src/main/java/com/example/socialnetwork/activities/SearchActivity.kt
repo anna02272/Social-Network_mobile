@@ -14,21 +14,28 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adapters.SearchAdapter
 import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.FriendRequest
 import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.services.FriendRequestService
+import com.example.socialnetwork.services.UserService
 import com.example.socialnetwork.utils.PreferencesManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.LocalDateTime
 
-class SearchActivity: AppCompatActivity() {
+class SearchActivity: AppCompatActivity(),
+    SearchAdapter.AddFriendButtonClickListener {
+
     private lateinit var searchEditText: EditText
     private lateinit var listView: ListView
     private lateinit var adapter: SearchAdapter
     private val users = ArrayList<User>()
+    private var currentUser: User? = null
     private var token: String? = null
     private lateinit var friendRequestService: FriendRequestService
+    private lateinit var userService: UserService
     override fun onCreate(savedInstanceState: Bundle?) {
         token = PreferencesManager.getToken(this)
         if (token == null) {
@@ -45,18 +52,23 @@ class SearchActivity: AppCompatActivity() {
 
         initializeServices()
 
-        startSearch()
+        fetchUserData()
+
+        initializeSearch()
     }
     private fun initializeServices() {
         val token = PreferencesManager.getToken(this) ?: return
         friendRequestService = ClientUtils.getFriendRequestService(token)
+        userService = ClientUtils.getUserService(token)
     }
     @SuppressLint("ClickableViewAccessibility")
-    private fun startSearch() {
-        searchEditText = findViewById(R.id.searchEditText)
+    private fun initializeSearch() {
         listView = findViewById(R.id.searchListView)
         adapter = SearchAdapter(this, users)
+        adapter.addFriendButtonClickListener = this
         listView.adapter = adapter
+
+        searchEditText = findViewById(R.id.searchEditText)
         searchEditText.addTextChangedListener(createTextWatcher())
         searchEditText.setOnTouchListener(createOnTouchListener())
     }
@@ -100,8 +112,9 @@ class SearchActivity: AppCompatActivity() {
         call.enqueue(object : Callback<List<User>> {
             override fun onResponse(call: Call<List<User>>, response: Response<List<User>>) {
                 if (response.isSuccessful) {
+                    val filteredUsers = response.body()?.filter { it.id != currentUser?.id } ?: emptyList()
                     users.clear()
-                    users.addAll(response.body() ?: emptyList())
+                    users.addAll(filteredUsers)
                     adapter.notifyDataSetChanged()
                 } else {
                     showToast("Failed to fetch users: ${response.message()}")
@@ -112,6 +125,54 @@ class SearchActivity: AppCompatActivity() {
                 showToast("Error: ${t.message}")
             }
         })
+    }
+    private fun fetchUserData() {
+        val call = userService.whoAmI()
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
+    }
+    override fun onAddFriendButtonClick(user: User) {
+         val userId = user.id
+        if (currentUser != null && userId != null) {
+            val friendRequest = FriendRequest(
+                id = null,
+                approved = false,
+                created_at = LocalDateTime.now(),
+                at = LocalDateTime.now(),
+                fromUser = currentUser!!,
+                forUser = user
+            )
+
+            val call = friendRequestService.create(userId, friendRequest)
+            call.enqueue(object : Callback<FriendRequest> {
+                override fun onResponse(call: Call<FriendRequest>, response: Response<FriendRequest>) {
+                    if (response.isSuccessful) {
+                        showToast("Friend request sent successfully")
+                    } else {
+                        showToast("You already sent friend request to this user.")
+                    }
+                }
+
+                override fun onFailure(call: Call<FriendRequest>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+        } else {
+            showToast("Error: Current user or user ID is null")
+        }
     }
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -163,4 +224,5 @@ class SearchActivity: AppCompatActivity() {
             }
         }
     }
+
 }

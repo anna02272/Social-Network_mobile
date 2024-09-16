@@ -19,7 +19,7 @@
             android:background="@drawable/image_border">
 
             <ImageView
-                android:id="@+id/profileImage"
+                android:id="@+id/searchProfileImage"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/smiley_circle"
@@ -57,7 +57,7 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/createPostButton"
+            android:id="@+id/addFriendButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_friend"
