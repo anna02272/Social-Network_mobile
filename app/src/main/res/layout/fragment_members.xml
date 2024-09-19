@@ -9,7 +9,7 @@
         android:id="@+id/membersTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/members"
+        android:text="@string/group_members"
         android:textAlignment="textStart"
         android:textSize="23sp"
         android:textStyle="bold"

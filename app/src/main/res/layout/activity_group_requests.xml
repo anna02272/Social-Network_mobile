@@ -4,7 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.GroupRequestActivity">
+    tools:context=".activities.GroupRequestsActivity">
+
+    <TextView
+        android:id="@+id/groupRequestTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/group_requests"
+        android:textAlignment="textStart"
+        android:textSize="23sp"
+        android:textStyle="bold"
+        android:paddingLeft="8dp"
+        android:paddingBottom="8dp"
+        android:layout_below="@id/coverImage"/>
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@android:color/darker_gray"
+        android:layout_below="@id/groupRequestTextView"/>
 
     <ImageView
         android:id="@+id/coverImage"
@@ -19,7 +38,7 @@
         android:id="@+id/groupRequestsListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/coverImage"
+        android:layout_below="@id/view"
         android:layout_above="@id/bottomNavigation"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

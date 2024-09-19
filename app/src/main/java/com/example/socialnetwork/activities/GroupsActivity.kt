@@ -313,7 +313,6 @@ class GroupsActivity : AppCompatActivity(),
     }
     private fun joinGroup(group: Group?) {
         if (currentUser == null || group == null) {
-            Log.d("GroupsActivity", "User or Group information is missing. User: $currentUser, Group: $group")
             showToast("User or Group information is missing")
             return
         }
@@ -325,24 +324,18 @@ class GroupsActivity : AppCompatActivity(),
             user = currentUser!!,
             group = group,
         )
-        Log.d("GroupsActivity", "Sending group request: $groupRequest")
-
 
         val call = groupRequestService.createGroupRequest(group.id!!, groupRequest)
         call.enqueue(object : Callback<GroupRequest> {
             override fun onResponse(call: Call<GroupRequest>, response: Response<GroupRequest>) {
                 if (response.isSuccessful) {
-                    Log.d("GroupsActivity", "Group request sent successfully. Response: ${response.body()}")
-                    showToast("Group request sent successfully")
+                     showToast("Group request sent successfully")
                 } else {
-                    Log.d("GroupsActivity", "Failed to send group request. Response code: ${response.code()}")
-
-                    showToast("Failed to send group request")
+                     showToast("Failed to send group request")
                 }
             }
 
             override fun onFailure(call: Call<GroupRequest>, t: Throwable) {
-                Log.d("GroupsActivity", "Error sending group request: ${t.message}")
                 showToast("Error: ${t.message}")
             }
         })

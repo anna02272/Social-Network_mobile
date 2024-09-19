@@ -81,8 +81,8 @@
     <string name="group">Group</string>
     <string name="group_requests">Group requests</string>
     <string name="remove_group_admin">Remove group admin</string>
-    <string name="blocked_members">Blocked Members:</string>
-    <string name="members">Members:</string>
+    <string name="blocked_members">Blocked Members</string>
+    <string name="group_members">Group members</string>
     <string name="group_name_label">group: %1$s</string>
 
     <!-- Reports-->
