@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -401,7 +400,6 @@ class PostsActivity : AppCompatActivity(),
             }
         })
     }
-
     private fun updateListView(posts: List<Post>) {
         val listView: ListView = findViewById(R.id.postsListView)
         adapter = PostAdapter(this, posts)

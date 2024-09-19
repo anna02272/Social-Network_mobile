@@ -16,7 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.socialnetwork.R
-import com.example.socialnetwork.adapters.GroupAdapter
+import com.example.socialnetwork.adapters.GroupsAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.CreateGroupRequest
 import com.example.socialnetwork.model.entity.Group
@@ -35,8 +35,9 @@ import retrofit2.Response
 import java.time.LocalDateTime
 
 class GroupsActivity : AppCompatActivity(),
-    GroupAdapter.DeleteButtonClickListener,
-    GroupAdapter.GroupRequestButtonClickListener{
+    GroupsAdapter.DeleteButtonClickListener,
+    GroupsAdapter.GroupRequestButtonClickListener,
+    GroupsAdapter.OpenGroupButtonClickListener {
 
     private lateinit var dimBackgroundView: View
     private lateinit var createGroupPopup: RelativeLayout
@@ -210,9 +211,10 @@ class GroupsActivity : AppCompatActivity(),
     }
     private fun updateListView(groups: ArrayList<Group>) {
         val listView: ListView = findViewById(R.id.groupsListView)
-        val adapter = GroupAdapter(this, groups)
+        val adapter = GroupsAdapter(this, groups)
         adapter.deleteButtonClickListener = this
         adapter.groupRequestButtonClickListener = this
+        adapter.openGroupButtonClickListener = this
         listView.adapter = adapter
     }
     private fun showGroupPopup() {
@@ -231,6 +233,12 @@ class GroupsActivity : AppCompatActivity(),
     }
     override fun onGroupRequestButtonClick(group: Group) {
         joinGroup(group)
+    }
+
+    override fun onOpenGroupButtonClick(group: Group) {
+        val intent = Intent(this, GroupActivity::class.java)
+        intent.putExtra("group", group)
+        this.startActivity(intent)
     }
 
     private fun hideGroupPopup() {

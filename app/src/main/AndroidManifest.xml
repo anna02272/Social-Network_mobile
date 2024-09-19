@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -18,13 +18,21 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".activities.GroupMembersActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GroupRequestsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.GroupActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CommentActivity"
             android:exported="false" />
         <activity
             android:name=".activities.PostsActivity"
             android:exported="true"
-            android:theme="@style/Theme.SocialNetwork.Starting">
-        </activity>
+            android:theme="@style/Theme.SocialNetwork.Starting" />
         <activity
             android:name=".activities.ProfileActivity"
             android:exported="false" />
@@ -45,6 +53,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

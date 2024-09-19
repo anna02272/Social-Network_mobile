@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.socialnetwork.R
+import com.example.socialnetwork.activities.GroupActivity
 import com.example.socialnetwork.activities.UserProfileActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReactionType
@@ -124,10 +125,10 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
 
         return view
     }
-
     inner class ViewHolder(view: View) {
         private val profileImageView: ImageView = view.findViewById(R.id.profileImage)
         private val usernameTextView: TextView = view.findViewById(R.id.usernameTextView)
+        private val groupTextView: TextView = view.findViewById(R.id.groupTextView)
         private val dateTextView: TextView = view.findViewById(R.id.dateTextView)
         private val contentTextView: TextView = view.findViewById(R.id.contentTextView)
         private val commentButton: ImageButton = view.findViewById(R.id.commentButton)
@@ -141,6 +142,14 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
             post.user?.id?.let { loadProfileImage(it) }
             usernameTextView.text =
                 post.user?.profileName?.takeIf { it.isNotEmpty() } ?: post.user?.username
+            val groupName = post.group?.name
+            if (groupName.isNullOrEmpty()) {
+                groupTextView.visibility = View.GONE
+            } else {
+                groupTextView.text = context.getString(R.string.group_name_label, groupName)
+                groupTextView.visibility = View.VISIBLE
+            }
+
             dateTextView.text =
                 post.creationDate.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
             contentTextView.text = post.content
@@ -148,6 +157,12 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
             usernameTextView.setOnClickListener {
                 val intent = Intent(mContext, UserProfileActivity::class.java)
                 intent.putExtra("user", post.user)
+                mContext.startActivity(intent)
+            }
+
+            groupTextView.setOnClickListener {
+                val intent = Intent(mContext, GroupActivity::class.java)
+                intent.putExtra("group", post.group)
                 mContext.startActivity(intent)
             }
 

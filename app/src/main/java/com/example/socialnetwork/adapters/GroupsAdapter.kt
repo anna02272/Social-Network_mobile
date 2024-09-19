@@ -23,7 +23,7 @@ import retrofit2.Response
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class GroupAdapter(context: Context, groups: ArrayList<Group>) :
+class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
     ArrayAdapter<Group>(context, R.layout.fragment_group, groups) {
     private var currentUser: User? = null
     private var currentToast: Toast? = null
@@ -38,8 +38,14 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
         fun onGroupRequestButtonClick(group: Group)
     }
 
+    interface OpenGroupButtonClickListener {
+        fun onOpenGroupButtonClick(group: Group)
+    }
+
     var deleteButtonClickListener: DeleteButtonClickListener? = null
     var groupRequestButtonClickListener: GroupRequestButtonClickListener? = null
+    var openGroupButtonClickListener: OpenGroupButtonClickListener? = null
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
         val group: Group? = getItem(position)
@@ -78,6 +84,12 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
             }
         }
 
+        nameTextView.setOnClickListener { view ->
+            group?.let {
+                openGroupButtonClickListener?.onOpenGroupButtonClick(it)
+            }
+        }
+
         return view
     }
     private fun fetchUserData() {
@@ -99,6 +111,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
             }
         })
     }
+
     private fun showPopupMenu(view: View, groupId: Long?) {
         val popup = PopupMenu(context, view)
 
@@ -123,6 +136,7 @@ class GroupAdapter(context: Context, groups: ArrayList<Group>) :
 
         popup.show()
     }
+
     private fun showToast(message: String) {
         currentToast?.cancel()
         currentToast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
