@@ -3,7 +3,6 @@ package com.example.socialnetwork.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -36,6 +35,7 @@ import java.time.LocalDateTime
 
 class GroupsActivity : AppCompatActivity(),
     GroupsAdapter.DeleteButtonClickListener,
+    GroupsAdapter.EditButtonClickListener,
     GroupsAdapter.GroupRequestButtonClickListener,
     GroupsAdapter.OpenGroupButtonClickListener {
 
@@ -213,23 +213,42 @@ class GroupsActivity : AppCompatActivity(),
         val listView: ListView = findViewById(R.id.groupsListView)
         val adapter = GroupsAdapter(this, groups)
         adapter.deleteButtonClickListener = this
+        adapter.editButtonClickListener = this
         adapter.groupRequestButtonClickListener = this
         adapter.openGroupButtonClickListener = this
         listView.adapter = adapter
     }
-    private fun showGroupPopup() {
+    private fun showGroupPopup(group: Group? = null) {
         dimBackgroundView.visibility = View.VISIBLE
         createGroupPopup.visibility = View.VISIBLE
 
         val popupCreateGroupButton = findViewById<Button>(R.id.popupCreateGroupButton)
-        popupCreateGroupButton.setOnClickListener {
-            createGroup()
+        val createGroupTextView = findViewById<TextView>(R.id.createGroupTextView)
+
+        if (group == null) {
+            createGroupTextView.text = getString(R.string.create_group)
+            popupCreateGroupButton.text = getString(R.string.create_group)
+            popupCreateGroupButton.setOnClickListener {
+                createGroup()
+            }
+        } else {
+            createGroupTextView.text = getString(R.string.update_group)
+            popupCreateGroupButton.text = getString(R.string.update_group)
+            popupCreateGroupButton.setOnClickListener {
+                updateGroup(group)
+            }
+            popupNameEditText.setText(group.name)
+            popupDescriptionEditText.setText(group.description)
         }
     }
+
     override fun onDeleteButtonClick(groupId: Long?) {
         if (groupId != null) {
             showSuspendPopup(groupId)
         }
+    }
+    override fun onEditButtonClick(group: Group) {
+        showGroupPopup(group)
     }
     override fun onGroupRequestButtonClick(group: Group) {
         joinGroup(group)
@@ -299,6 +318,47 @@ class GroupsActivity : AppCompatActivity(),
             override fun onResponse(call: Call<Group>, response: Response<Group>) {
                 if (response.isSuccessful) {
                     showToast("Group created successfully")
+                    hideGroupPopup()
+                    token?.let { fetchGroupsFromServer() }
+                } else {
+                    handleError(response)
+                }
+            }
+
+            override fun onFailure(call: Call<Group>, t: Throwable) {
+                showCreateGroupValidationError("Error: ${t.message}")
+            }
+        })
+    }
+    private fun updateGroup(group: Group) {
+        val name = popupNameEditText.text.toString().trim()
+        val description = popupDescriptionEditText.text.toString().trim()
+
+        resetBorders()
+
+        if (name.isEmpty()) {
+            showCreateGroupValidationError("Name cannot be empty")
+            popupNameEditText.background =
+                ContextCompat.getDrawable(this, R.drawable.border_red_square)
+            return
+        }
+
+        if (description.isEmpty()) {
+            showCreateGroupValidationError("Description cannot be empty")
+            popupDescriptionEditText.background =
+                ContextCompat.getDrawable(this, R.drawable.border_red_square)
+            return
+        }
+
+        val updatedGroup = CreateGroupRequest(
+            name = name,
+            description = description
+        )
+
+        group.id?.let { groupService.update(it, updatedGroup) }?.enqueue(object : Callback<Group> {
+            override fun onResponse(call: Call<Group>, response: Response<Group>) {
+                if (response.isSuccessful) {
+                    showToast("Group updated successfully")
                     hideGroupPopup()
                     token?.let { fetchGroupsFromServer() }
                 } else {

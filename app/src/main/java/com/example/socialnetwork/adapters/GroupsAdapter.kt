@@ -34,6 +34,10 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
         fun onDeleteButtonClick(groupId: Long?)
     }
 
+    interface EditButtonClickListener {
+        fun onEditButtonClick(group: Group)
+    }
+
     interface GroupRequestButtonClickListener {
         fun onGroupRequestButtonClick(group: Group)
     }
@@ -43,6 +47,7 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
     }
 
     var deleteButtonClickListener: DeleteButtonClickListener? = null
+    var editButtonClickListener: EditButtonClickListener? = null
     var groupRequestButtonClickListener: GroupRequestButtonClickListener? = null
     var openGroupButtonClickListener: OpenGroupButtonClickListener? = null
 
@@ -75,7 +80,9 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
         }
 
         moreOptionsButton.setOnClickListener { view ->
-            showPopupMenu(view, group?.id)
+            if (group != null) {
+                showPopupMenu(view, group)
+            }
         }
 
         joinButton.setOnClickListener { view ->
@@ -112,7 +119,7 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
         })
     }
 
-    private fun showPopupMenu(view: View, groupId: Long?) {
+    private fun showPopupMenu(view: View, group: Group) {
         val popup = PopupMenu(context, view)
 
         val menu = popup.menu
@@ -124,10 +131,11 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.edit -> {
+                    editButtonClickListener?.onEditButtonClick(group)
                     true
                 }
                 R.id.delete -> {
-                    deleteButtonClickListener?.onDeleteButtonClick(groupId)
+                    deleteButtonClickListener?.onDeleteButtonClick(group.id)
                     true
                 }
                 else -> false

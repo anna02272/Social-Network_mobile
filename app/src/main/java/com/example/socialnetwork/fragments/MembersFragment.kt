@@ -58,7 +58,7 @@ class MembersFragment : Fragment(), MemberAdapter.AcceptButtonClickListener {
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
-                    showToast("Failed to load reports")
+                    showToast("Failed to load members")
                 }
             }
 
@@ -106,7 +106,7 @@ class MembersFragment : Fragment(), MemberAdapter.AcceptButtonClickListener {
                     showToast("User blocked")
                     fetchGroupMembersFromServer(token, group.id!!)
                 } else {
-                    showToast("Failed to block user")
+                    showToast("Failed, user is already blocked")
                 }
             }
 

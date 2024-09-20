@@ -20,7 +20,7 @@ interface GroupService {
         "Content-Type: application/json"
     )
     @PUT("groups/update/{id}")
-    fun update(@Path("id") id: Long, @Body group: Group): Call<Group>
+    fun update(@Path("id") id: Long, @Body group: CreateGroupRequest): Call<Group>
 
     @Headers(
         "User-Agent: Mobile-Android",

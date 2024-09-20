@@ -137,10 +137,12 @@ class GroupFragment : Fragment() {
 
         val menu = popup.menu
         menu.add(0, R.id.edit, 1, requireContext().getString(R.string.group_requests))
+
+        menu.add(0, R.id.delete, 2, requireContext().getString(R.string.group_members))
+
         if (currentUser?.type == EUserType.ADMIN) {
-            menu.add(0, R.id.delete, 2, requireContext().getString(R.string.group_members))
+            menu.add(0, R.id.report, 2, requireContext().getString(R.string.remove_group_admin))
         }
-        menu.add(0, R.id.report, 2, requireContext().getString(R.string.remove_group_admin))
 
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
