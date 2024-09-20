@@ -61,7 +61,7 @@ import java.io.FileOutputStream
 import java.time.LocalDate
 
 
-class PostsActivity : AppCompatActivity(),
+open class PostsActivity : AppCompatActivity(),
     PostAdapter.CommentButtonClickListener,
     PostAdapter.ReportButtonClickListener,
     PostAdapter.DeleteButtonClickListener,
@@ -377,7 +377,7 @@ class PostsActivity : AppCompatActivity(),
         sortByDateButton.text = newText
     }
 
-    private fun fetchPostsFromServer() {
+    fun fetchPostsFromServer() {
         val call = if (sortingOrder == "ascending") postService.getAllAscending() else postService.getAllDescending()
 
         call.enqueue(object : Callback<List<Post>> {

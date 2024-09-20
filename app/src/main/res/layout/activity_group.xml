@@ -102,4 +102,22 @@
         app:itemRippleColor="@android:color/transparent"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/bottom_menu" />
+
+    <View
+        android:id="@+id/dimBackgroundView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/createPostPopupInclude"
+        layout="@layout/create_post_popup"
+        />
+
+    <include
+        android:id="@+id/createReportPopupInclude"
+        layout="@layout/create_report_popup"
+        />
+
 </RelativeLayout>

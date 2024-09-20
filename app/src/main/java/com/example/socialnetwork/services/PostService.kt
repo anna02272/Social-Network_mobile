@@ -35,7 +35,7 @@ interface PostService {
     @POST("posts/create/{id}")
     fun createGroupPost(
         @Path("id") groupId: Long,
-        @Part("content") content: String,
+        @Part("content") content: RequestBody,
         @Part images: List<MultipartBody.Part>? = null
     ): Call<Post>
 
