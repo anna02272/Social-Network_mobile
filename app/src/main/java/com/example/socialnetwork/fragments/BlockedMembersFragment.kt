@@ -13,6 +13,7 @@ import com.example.socialnetwork.activities.LoginActivity
 import com.example.socialnetwork.adapters.BannedAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Banned
+import com.example.socialnetwork.model.entity.Group
 import com.example.socialnetwork.utils.PreferencesManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,6 +22,7 @@ import retrofit2.Response
 class BlockedMembersFragment : Fragment(),
     BannedAdapter.AcceptButtonClickListener{
         private var token: String? = null
+    private lateinit var group: Group
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,13 +37,15 @@ class BlockedMembersFragment : Fragment(),
             return view
         }
 
-//        fetchBlockedUsersFromServer(token!!)
+        @Suppress("DEPRECATION")
+        group = arguments?.getParcelable("group")!!
+        group.id?.let { fetchBlockedMembersFromServer(token!!, it) }
 
         return view
     }
-    private fun fetchBlockedUsersFromServer(token: String) {
+    private fun fetchBlockedMembersFromServer(token: String, groupId: Long) {
         val bannedService = ClientUtils.getBannedService(token)
-        val call = bannedService.getAllBlockedUsers()
+        val call = bannedService.getAllBlockedGroupUsers(groupId)
 
         call.enqueue(object : Callback<List<Banned>> {
             override fun onResponse(
@@ -54,7 +58,7 @@ class BlockedMembersFragment : Fragment(),
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
-                    showToast("Failed to load reports")
+                    showToast("Failed to load blocked members")
                 }
             }
 
@@ -90,7 +94,7 @@ class BlockedMembersFragment : Fragment(),
             override fun onResponse(call: Call<Banned>, response: Response<Banned>) {
                 if (response.isSuccessful) {
                     showToast("User unblocked")
-                    fetchBlockedUsersFromServer(token)
+                    group.id?.let { fetchBlockedMembersFromServer(token, it) }
                 } else {
                     showToast("Failed to unblock user")
                 }

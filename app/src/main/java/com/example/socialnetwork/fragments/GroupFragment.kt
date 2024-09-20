@@ -170,7 +170,7 @@ class GroupFragment : Fragment() {
 
     private fun openGroupMembersActivity(group: Group){
         val intent = Intent(requireContext(), GroupMembersActivity::class.java)
-//        intent.putExtra("groupId", groupId)
+        intent.putExtra("group", group)
         requireContext().startActivity(intent)
     }
 

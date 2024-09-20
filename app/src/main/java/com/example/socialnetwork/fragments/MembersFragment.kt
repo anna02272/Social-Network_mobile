@@ -10,17 +10,21 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
 import com.example.socialnetwork.activities.LoginActivity
-import com.example.socialnetwork.adapters.BannedAdapter
+import com.example.socialnetwork.adapters.MemberAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Banned
+import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.PreferencesManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.time.LocalDate
 
-class MembersFragment : Fragment(),
-    BannedAdapter.AcceptButtonClickListener{
-        private var token: String? = null
+class MembersFragment : Fragment(), MemberAdapter.AcceptButtonClickListener {
+    private var token: String? = null
+    private lateinit var group: Group
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,22 +39,22 @@ class MembersFragment : Fragment(),
             return view
         }
 
-//        fetchBlockedUsersFromServer(token!!)
+        @Suppress("DEPRECATION")
+        group = arguments?.getParcelable("group")!!
+        group.id?.let { fetchGroupMembersFromServer(token!!, it) }
 
         return view
     }
-    private fun fetchBlockedUsersFromServer(token: String) {
-        val bannedService = ClientUtils.getBannedService(token)
-        val call = bannedService.getAllBlockedUsers()
 
-        call.enqueue(object : Callback<List<Banned>> {
-            override fun onResponse(
-                call: Call<List<Banned>>,
-                response: Response<List<Banned>>
-            ) {
+    private fun fetchGroupMembersFromServer(token: String, groupId: Long) {
+        val groupRequestService = ClientUtils.getGroupRequestService(token)
+        val call = groupRequestService.getApprovedUsersForGroup(groupId)
+
+        call.enqueue(object : Callback<Set<User>> {
+            override fun onResponse(call: Call<Set<User>>, response: Response<Set<User>>) {
                 if (response.isSuccessful) {
-                    val banned = response.body() ?: arrayListOf()
-                    updateListView(banned)
+                    val approvedMembers = response.body() ?: emptySet()
+                    updateListView(approvedMembers)
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
@@ -58,7 +62,7 @@ class MembersFragment : Fragment(),
                 }
             }
 
-            override fun onFailure(call: Call<List<Banned>>, t: Throwable) {
+            override fun onFailure(call: Call<Set<User>>, t: Throwable) {
                 showToast("Error: ${t.message}")
             }
         })
@@ -71,28 +75,38 @@ class MembersFragment : Fragment(),
         requireActivity().finish()
     }
 
-    private fun updateListView(banned: List<Banned>) {
+    private fun updateListView(approvedMembers: Set<User>) {
         val listView: ListView = requireView().findViewById(R.id.membersListView)
-        val adapter = BannedAdapter(
+        val adapter = MemberAdapter(
             requireContext(),
-            ArrayList(banned),
-            getString(R.string.unblock_user))
+            ArrayList(approvedMembers),
+            getString(R.string.block_user)
+        )
 
         adapter.acceptButtonClickListener = this
         listView.adapter = adapter
     }
 
-    override fun onAcceptButtonClick(bannedId: Long) {
+    override fun onAcceptButtonClick(userId: Long) {
+        val banned = Banned(
+            id = null,
+            timeStamp = LocalDate.now(),
+            isBlocked = true,
+            groupAdmin = null,
+            group = null,
+            bannedUser = null,
+            user = null
+        )
         val token = PreferencesManager.getToken(requireContext()) ?: return
         val bannedService = ClientUtils.getBannedService(token)
 
-        bannedService.unblockUser(bannedId).enqueue(object : Callback<Banned> {
+        bannedService.blockGroupUser(userId, group.id!!, banned).enqueue(object : Callback<Banned> {
             override fun onResponse(call: Call<Banned>, response: Response<Banned>) {
                 if (response.isSuccessful) {
-                    showToast("User unblocked")
-                    fetchBlockedUsersFromServer(token)
+                    showToast("User blocked")
+                    fetchGroupMembersFromServer(token, group.id!!)
                 } else {
-                    showToast("Failed to unblock user")
+                    showToast("Failed to block user")
                 }
             }
 

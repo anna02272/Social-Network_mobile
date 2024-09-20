@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.viewpager2.widget.ViewPager2
 import com.example.socialnetwork.R
 import com.example.socialnetwork.adapters.SectionsPagerGroupAdapter
+import com.example.socialnetwork.model.entity.Group
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -13,14 +14,18 @@ import com.google.android.material.tabs.TabLayoutMediator
 class GroupMembersActivity : AppCompatActivity() {
     private lateinit var viewPager: ViewPager2
     private lateinit var tabLayout: TabLayout
+    private lateinit var group: Group
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_group_members)
 
+        @Suppress("DEPRECATION")
+        group = intent.getParcelableExtra("group")!!
+
         setupBottomNavigation()
 
-        setupTabLayout()
+        setupTabLayout(group)
 
     }
     private fun setupBottomNavigation() {
@@ -89,11 +94,11 @@ class GroupMembersActivity : AppCompatActivity() {
             }
         }
     }
-    private fun setupTabLayout() {
+    private fun setupTabLayout(group: Group) {
         viewPager = findViewById(R.id.viewPager)
         tabLayout = findViewById(R.id.tabLayout)
 
-        viewPager.adapter = SectionsPagerGroupAdapter(this)
+        viewPager.adapter = SectionsPagerGroupAdapter(this, group)
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
                 0 -> getString(R.string.group_members)
