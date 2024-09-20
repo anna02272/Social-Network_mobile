@@ -2,7 +2,6 @@ package com.example.socialnetwork.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,12 +12,12 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.socialnetwork.R
-import com.example.socialnetwork.activities.GroupActivity
 import com.example.socialnetwork.activities.GroupMembersActivity
 import com.example.socialnetwork.activities.GroupRequestsActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EUserType
 import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.model.entity.GroupAdmin
 import com.example.socialnetwork.model.entity.GroupRequest
 import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.PreferencesManager
@@ -169,15 +168,51 @@ class GroupFragment : Fragment() {
         intent.putExtra("group", group)
         requireContext().startActivity(intent)
     }
-
     private fun openGroupMembersActivity(group: Group){
         val intent = Intent(requireContext(), GroupMembersActivity::class.java)
         intent.putExtra("group", group)
         requireContext().startActivity(intent)
     }
+    private fun removeGroupAdmin(group: Group) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val groupAdminService = ClientUtils.getGroupAdminService(token)
 
-    private fun removeGroupAdmin(group: Group){
+        group.id?.let { groupAdminService.removeGroupAdmin(it) }
+            ?.enqueue(object : Callback<GroupAdmin> {
+                override fun onResponse(call: Call<GroupAdmin>, response: Response<GroupAdmin>) {
+                    if (response.isSuccessful) {
+                        showToast("Group admin removed successfully")
+                        fetchUpdatedGroupData(group.id)
+                    } else {
+                        showToast("Failed to remove group admin")
+                    }
+                }
 
+                override fun onFailure(call: Call<GroupAdmin>, t: Throwable) {
+                    showToast("Error: ${t.message}")
+                }
+            })
+    }
+    private fun fetchUpdatedGroupData(groupId: Long) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val groupService = ClientUtils.getGroupService(token)
+
+        groupService.getById(groupId).enqueue(object : Callback<Group> {
+            override fun onResponse(call: Call<Group>, response: Response<Group>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { updatedGroup ->
+                        group = updatedGroup
+                        view?.let { bindGroupData(it) }
+                    }
+                } else {
+                    showToast("Failed to fetch updated group data")
+                }
+            }
+
+            override fun onFailure(call: Call<Group>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
     }
     private fun showToast(message: String) {
         currentToast?.cancel()
