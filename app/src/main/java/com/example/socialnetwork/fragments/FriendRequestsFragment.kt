@@ -47,8 +47,8 @@ class FriendRequestsFragment : Fragment(),
     private fun fetchFriendRequestsFromServer(token: String, userId: Long) {
         val friendRequestService = ClientUtils.getFriendRequestService(token)
 
-        userId?.let { friendRequestService.getByUser(userId) }
-            ?.enqueue(object : Callback<List<FriendRequest>> {
+        userId.let { friendRequestService.getByUser(userId) }
+            .enqueue(object : Callback<List<FriendRequest>> {
                 override fun onResponse(
                     call: Call<List<FriendRequest>>,
                     response: Response<List<FriendRequest>>

@@ -20,6 +20,7 @@ import com.example.socialnetwork.activities.UserProfileActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.Comment
 import com.example.socialnetwork.model.entity.EReactionType
+import com.example.socialnetwork.model.entity.EUserType
 import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.CircleTransform
@@ -303,8 +304,13 @@ class CommentAdapter(
 
         val menu = popup.menu
         menu.add(0, R.id.reply, 0, context.getString(R.string.reply_to_comment))
-        menu.add(0, R.id.edit, 1, context.getString(R.string.edit_comment))
-        menu.add(0, R.id.delete, 2, context.getString(R.string.delete_comment))
+        if (currentUser?.type == EUserType.ADMIN || comment.user?.username == currentUser?.username) {
+            menu.add(0, R.id.edit, 1, context.getString(R.string.edit_comment))
+        }
+        if (currentUser?.type == EUserType.ADMIN || comment.user?.username == currentUser?.username
+            || comment.post.user?.username == currentUser?.username) {
+            menu.add(0, R.id.delete, 2, context.getString(R.string.delete_comment))
+        }
         menu.add(0, R.id.report, 3, context.getString(R.string.report_comment))
 
 

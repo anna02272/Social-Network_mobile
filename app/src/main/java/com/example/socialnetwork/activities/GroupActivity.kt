@@ -14,6 +14,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
@@ -31,14 +32,18 @@ import com.example.socialnetwork.adapters.ImageEditPostAdapter
 import com.example.socialnetwork.adapters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.fragments.GroupFragment
+import com.example.socialnetwork.model.entity.Banned
 import com.example.socialnetwork.model.entity.EReactionType
 import com.example.socialnetwork.model.entity.EReportReason
 import com.example.socialnetwork.model.entity.Group
+import com.example.socialnetwork.model.entity.GroupRequest
 import com.example.socialnetwork.model.entity.Image
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.services.BannedService
+import com.example.socialnetwork.services.GroupRequestService
 import com.example.socialnetwork.services.PostService
 import com.example.socialnetwork.services.ReactionService
 import com.example.socialnetwork.services.ReportService
@@ -92,8 +97,11 @@ class GroupActivity : AppCompatActivity(),
     private lateinit var reactionService: ReactionService
     private lateinit var userService: UserService
     private lateinit var reportService: ReportService
+    private lateinit var groupRequestService: GroupRequestService
+    private lateinit var bannedService: BannedService
     private lateinit var sortByDateButton: Button
     private var sortingOrder = "descending"
+    private lateinit var createPostBox: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,16 +119,17 @@ class GroupActivity : AppCompatActivity(),
         fetchUserData()
         initializeActivityResultLauncher()
         group.id?.let { initializeViews(it) }
-        group.id?.let { fetchPostsFromServer(it) }
         setupBottomNavigation()
     }
 
     private fun initializeServices() {
-        val token = PreferencesManager.getToken(this) ?: return
+        token = PreferencesManager.getToken(this) ?: return
         postService = ClientUtils.getPostService(token)
         reactionService = ClientUtils.getReactionService(token)
         userService = ClientUtils.getUserService(token)
         reportService = ClientUtils.getReportService(token)
+        groupRequestService = ClientUtils.getGroupRequestService(token)
+        bannedService = ClientUtils.getBannedService(token)
     }
 
     private fun initializeViews(groupId: Long) {
@@ -135,6 +144,9 @@ class GroupActivity : AppCompatActivity(),
         selectedImages = mutableListOf()
         progressBar = findViewById(R.id.progressBar)
         sortByDateButton = findViewById(R.id.sortByDateButton)
+        createPostBox = findViewById(R.id.createPostBox)
+
+        createPostBox.visibility = View.GONE
 
         sortByDateButton.setOnClickListener {
             toggleSortingOrder(groupId)
@@ -364,19 +376,77 @@ class GroupActivity : AppCompatActivity(),
                     val user = response.body()
                     if (user != null) {
                         currentUser = user
+                        checkGroupRequestStatus()
                         val profileImage = findViewById<ImageView>(R.id.postProfileImage)
                         user.id?.let {
                             if (profileImage != null) {
                                 loadProfileImage(it, profileImage)
                             }
                         }
+                        }
                     }
-                } else {
-                }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 showToast("Error: ${t.message}")
+            }
+        })
+    }
+    private fun checkGroupRequestStatus() {
+        val call = groupRequestService.getGroupRequestByUserAndGroup(currentUser?.id ?: return, group.id ?: return)
+
+        val isUserGroupAdmin = group.groupAdmin.any { it.user?.username == currentUser?.username }
+
+        call.enqueue(object : Callback<GroupRequest> {
+            override fun onResponse(call: Call<GroupRequest>, response: Response<GroupRequest>) {
+                if (response.isSuccessful) {
+                    val groupRequest = response.body()
+                    if (groupRequest != null && groupRequest.approved) {
+                        checkIfUserIsBlocked(group.id!!)
+                    } else {
+                        if (!isUserGroupAdmin) {
+                            createPostBox.visibility = View.GONE
+                        }
+                    }
+                } else {
+                    if (isUserGroupAdmin) {
+                        checkIfUserIsBlocked(group.id!!)
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<GroupRequest>, t: Throwable) {
+                if (isUserGroupAdmin) {
+                    checkIfUserIsBlocked(group.id!!)
+                } else {
+                    createPostBox.visibility = View.GONE
+                }
+            }
+        })
+    }
+
+    private fun checkIfUserIsBlocked(groupId: Long) {
+        val call = bannedService.getAllBlockedGroupUsers(groupId)
+
+        call.enqueue(object : Callback<List<Banned>> {
+            override fun onResponse(call: Call<List<Banned>>, response: Response<List<Banned>>) {
+                if (response.isSuccessful) {
+                    val blockedUsers = response.body()
+                    val isUserBlocked = blockedUsers?.any { it.bannedUser?.id == currentUser?.id } ?: false
+
+                    if (isUserBlocked) {
+                        createPostBox.visibility = View.GONE
+                    } else {
+                        fetchPostsFromServer(groupId)
+                        createPostBox.visibility = View.VISIBLE
+                    }
+                } else {
+                    createPostBox.visibility = View.GONE
+                }
+            }
+
+            override fun onFailure(call: Call<List<Banned>>, t: Throwable) {
+                createPostBox.visibility = View.GONE
             }
         })
     }

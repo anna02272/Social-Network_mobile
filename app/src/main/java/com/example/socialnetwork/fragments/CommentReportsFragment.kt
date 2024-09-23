@@ -12,7 +12,9 @@ import com.example.socialnetwork.R
 import com.example.socialnetwork.activities.LoginActivity
 import com.example.socialnetwork.adapters.ReportAdapter
 import com.example.socialnetwork.clients.ClientUtils
+import com.example.socialnetwork.model.entity.EUserType
 import com.example.socialnetwork.model.entity.Report
+import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.PreferencesManager
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,6 +23,7 @@ import retrofit2.Response
 class CommentReportsFragment : Fragment(),
     ReportAdapter.DeleteButtonClickListener,
     ReportAdapter.AcceptButtonClickListener {
+    private var currentUser: User? = null
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -34,6 +37,7 @@ class CommentReportsFragment : Fragment(),
             requireActivity().finish()
             return view
         }
+        fetchUserData()
         fetchReportsFromServer(token)
 
         return view
@@ -73,7 +77,9 @@ class CommentReportsFragment : Fragment(),
 
     private fun updateListView(reports: List<Report>) {
         val filteredReports = reports.filter { report ->
-            !report.isDeleted
+            !report.isDeleted &&
+                    (currentUser?.type == EUserType.ADMIN ||
+                            report.comment?.post?.group?.groupAdmin?.any { it.user?.username == currentUser?.username } == true)
         }
 
         val listView: ListView = requireView().findViewById(R.id.commentReportsListView)
@@ -132,6 +138,26 @@ class CommentReportsFragment : Fragment(),
         }
     }
 
+    private fun fetchUserData() {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val userService = ClientUtils.getUserService(token)
+        val call = userService.whoAmI()
+
+        call.enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val user = response.body()
+                    if (user != null) {
+                        currentUser = user
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
+    }
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }

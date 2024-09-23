@@ -44,7 +44,7 @@ class GroupFragment : Fragment() {
         }
 
         bindGroupData(view)
-        fetchUserData()
+        fetchUserData(view)
 
         return view
     }
@@ -71,6 +71,7 @@ class GroupFragment : Fragment() {
 
         moreOptionsButton.setOnClickListener { showPopupMenu(it, group) }
         joinButton.setOnClickListener{joinGroup(group)}
+        joinButton.visibility = View.GONE
     }
     companion object {
         fun newInstance(group: Group): GroupFragment {
@@ -112,7 +113,7 @@ class GroupFragment : Fragment() {
             }
         })
     }
-    private fun fetchUserData() {
+    private fun fetchUserData(view: View) {
         val token = PreferencesManager.getToken(requireContext()) ?: return
         val userService = ClientUtils.getUserService(token)
         val call = userService.whoAmI()
@@ -123,6 +124,7 @@ class GroupFragment : Fragment() {
                     val user = response.body()
                     if (user != null) {
                         currentUser = user
+                        checkGroupRequestStatus(view)
                     }
                 }
             }
@@ -131,14 +133,55 @@ class GroupFragment : Fragment() {
             }
         })
     }
+    private fun checkGroupRequestStatus(view: View) {
+        val token = PreferencesManager.getToken(requireContext()) ?: return
+        val groupRequestService = ClientUtils.getGroupRequestService(token)
+        val call = groupRequestService.getGroupRequestByUserAndGroup(currentUser?.id ?: return, group.id ?: return)
+
+        val isUserGroupAdmin = group.groupAdmin.any { it.user?.username == currentUser?.username }
+
+        call.enqueue(object : Callback<GroupRequest> {
+            override fun onResponse(call: Call<GroupRequest>, response: Response<GroupRequest>) {
+                if (response.isSuccessful) {
+                    val groupRequest = response.body()
+                    if (groupRequest != null && groupRequest.approved) {
+                        if (isUserGroupAdmin) {
+                            view.findViewById<Button>(R.id.joinButton).visibility = View.GONE
+                        }
+                    } else {
+                        if (!isUserGroupAdmin) {
+                            view.findViewById<Button>(R.id.joinButton).visibility = View.VISIBLE
+                        }
+                    }
+                } else {
+                    if (isUserGroupAdmin) {
+                        view.findViewById<Button>(R.id.joinButton).visibility = View.GONE
+                    }
+                }
+            }
+            override fun onFailure(call: Call<GroupRequest>, t: Throwable) {
+                if (isUserGroupAdmin) {
+                    view.findViewById<Button>(R.id.joinButton).visibility = View.GONE
+                } else {
+                    view.findViewById<Button>(R.id.joinButton).visibility = View.VISIBLE
+                }
+            }
+        })
+    }
+
     private fun showPopupMenu(view: View, group: Group) {
         val popup = PopupMenu(requireContext(), view)
 
         val menu = popup.menu
-        menu.add(0, R.id.edit, 1, requireContext().getString(R.string.group_requests))
+        if (currentUser?.type == EUserType.ADMIN ||
+            group.groupAdmin.any { it.user?.username == currentUser?.username }) {
+            menu.add(0, R.id.edit, 1, requireContext().getString(R.string.group_requests))
+        }
 
-        menu.add(0, R.id.delete, 2, requireContext().getString(R.string.group_members))
-
+        if (currentUser?.type == EUserType.ADMIN ||
+            group.groupAdmin.any { it.user?.username == currentUser?.username }) {
+            menu.add(0, R.id.delete, 2, requireContext().getString(R.string.group_members))
+        }
         if (currentUser?.type == EUserType.ADMIN) {
             menu.add(0, R.id.report, 2, requireContext().getString(R.string.remove_group_admin))
         }

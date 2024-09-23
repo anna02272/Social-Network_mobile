@@ -20,6 +20,7 @@ import com.example.socialnetwork.activities.GroupActivity
 import com.example.socialnetwork.activities.UserProfileActivity
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReactionType
+import com.example.socialnetwork.model.entity.EUserType
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.User
@@ -241,7 +242,7 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
                               likeButton: ImageButton,
                               dislikeButton: ImageButton,
                               heartButton: ImageButton) {
-            currentUser?.id?.let {
+            currentUser.id?.let {
                 val token = PreferencesManager.getToken(context) ?: return
                 val reactionService = ClientUtils.getReactionService(token)
                 reactionService.findReactionByPostAndUser(post.id, it)?.enqueue(object : Callback<Reaction?> {
@@ -335,8 +336,10 @@ class PostAdapter(private val mContext: Context, posts: List<Post>) :
         val popup = PopupMenu(mContext, view)
 
         val menu = popup.menu
-        menu.add(0, R.id.edit, 0, mContext.getString(R.string.edit_post))
-        menu.add(0, R.id.delete, 1, mContext.getString(R.string.delete_post))
+        if (currentUser?.type == EUserType.ADMIN || post.user?.username == currentUser?.username) {
+            menu.add(0, R.id.edit, 0, mContext.getString(R.string.edit_post))
+            menu.add(0, R.id.delete, 1, mContext.getString(R.string.delete_post))
+        }
         menu.add(0, R.id.report, 2, mContext.getString(R.string.report_post))
 
         popup.setOnMenuItemClickListener { item ->

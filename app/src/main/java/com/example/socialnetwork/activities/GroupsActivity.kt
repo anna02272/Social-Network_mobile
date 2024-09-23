@@ -391,7 +391,7 @@ class GroupsActivity : AppCompatActivity(),
                 if (response.isSuccessful) {
                      showToast("Group request sent successfully")
                 } else {
-                     showToast("Failed to send group request")
+                     showToast("You have already sent a group request")
                 }
             }
 

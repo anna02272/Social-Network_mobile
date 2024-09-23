@@ -151,7 +151,7 @@ class SearchActivity: AppCompatActivity(),
                 id = null,
                 approved = false,
                 created_at = LocalDateTime.now(),
-                at = LocalDateTime.now(),
+                at = null,
                 fromUser = currentUser!!,
                 forUser = user
             )

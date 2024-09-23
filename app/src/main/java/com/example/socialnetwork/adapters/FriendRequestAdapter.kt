@@ -16,6 +16,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import java.time.format.DateTimeFormatter
 
 class FriendRequestAdapter(
     context: Context,
@@ -66,7 +67,7 @@ class FriendRequestAdapter(
             try {
                 val fullName = context.getString(R.string.user_full_name, it.fromUser.firstName, it.fromUser.lastName)
                 userTextView.text = fullName
-                dateTextView.text = it.created_at.toString()
+                dateTextView.text = it.created_at.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
                 it.fromUser.id?.let { userId ->
                     loadProfileImage(userId, profileImageView)
                 }

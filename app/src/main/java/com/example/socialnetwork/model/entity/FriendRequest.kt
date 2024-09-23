@@ -6,7 +6,7 @@ data class FriendRequest (
     val id: Long?,
     val approved: Boolean,
     val created_at: LocalDateTime,
-    val at: LocalDateTime,
+    val at: LocalDateTime? = null,
     val fromUser: User,
     val forUser: User
 )

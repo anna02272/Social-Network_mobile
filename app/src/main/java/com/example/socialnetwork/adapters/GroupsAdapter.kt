@@ -79,6 +79,11 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
             }
         }
 
+        joinButton.visibility = View.GONE
+        if (group != null) {
+            checkGroupRequestStatus(group, joinButton)
+        }
+
         moreOptionsButton.setOnClickListener { view ->
             if (group != null) {
                 showPopupMenu(view, group)
@@ -118,12 +123,50 @@ class GroupsAdapter(context: Context, groups: ArrayList<Group>) :
             }
         })
     }
+    private fun checkGroupRequestStatus(group: Group, joinButton: Button) {
+        val token = PreferencesManager.getToken(context) ?: return
+        val groupRequestService = ClientUtils.getGroupRequestService(token)
+        val call = groupRequestService.getGroupRequestByUserAndGroup(currentUser?.id ?: return, group.id ?: return)
+
+        val isUserGroupAdmin = group.groupAdmin.any { it.user?.username == currentUser?.username }
+
+        call.enqueue(object : Callback<GroupRequest> {
+            override fun onResponse(call: Call<GroupRequest>, response: Response<GroupRequest>) {
+                if (response.isSuccessful) {
+                    val groupRequest = response.body()
+                    if (groupRequest != null && groupRequest.approved) {
+                        if (isUserGroupAdmin) {
+                            joinButton.visibility = View.GONE
+                        }
+                    } else {
+                        if (!isUserGroupAdmin) {
+                            joinButton.visibility = View.VISIBLE
+                        }
+                    }
+                } else {
+                    if (isUserGroupAdmin) {
+                        joinButton.visibility = View.GONE
+                    }
+                }
+            }
+            override fun onFailure(call: Call<GroupRequest>, t: Throwable) {
+                if (isUserGroupAdmin) {
+                    joinButton.visibility = View.GONE
+                } else {
+                    joinButton.visibility = View.VISIBLE
+                }
+            }
+        })
+    }
 
     private fun showPopupMenu(view: View, group: Group) {
         val popup = PopupMenu(context, view)
 
         val menu = popup.menu
+        if (currentUser?.type == EUserType.ADMIN ||
+            group.groupAdmin.any { it.user?.username == currentUser?.username }) {
         menu.add(0, R.id.edit, 1, context.getString(R.string.edit_group))
+        }
         if (currentUser?.type == EUserType.ADMIN) {
             menu.add(0, R.id.delete, 2, context.getString(R.string.suspend_group))
         }

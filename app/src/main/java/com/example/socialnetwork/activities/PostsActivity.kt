@@ -33,11 +33,15 @@ import com.example.socialnetwork.adapters.PostAdapter
 import com.example.socialnetwork.clients.ClientUtils
 import com.example.socialnetwork.model.entity.EReactionType
 import com.example.socialnetwork.model.entity.EReportReason
+import com.example.socialnetwork.model.entity.Group
 import com.example.socialnetwork.model.entity.Image
 import com.example.socialnetwork.model.entity.Post
 import com.example.socialnetwork.model.entity.Reaction
 import com.example.socialnetwork.model.entity.Report
 import com.example.socialnetwork.model.entity.User
+import com.example.socialnetwork.services.BannedService
+import com.example.socialnetwork.services.FriendRequestService
+import com.example.socialnetwork.services.GroupRequestService
 import com.example.socialnetwork.services.PostService
 import com.example.socialnetwork.services.ReactionService
 import com.example.socialnetwork.services.ReportService
@@ -49,6 +53,10 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -89,6 +97,9 @@ open class PostsActivity : AppCompatActivity(),
     private lateinit var reactionService: ReactionService
     private lateinit var userService: UserService
     private lateinit var reportService: ReportService
+    private lateinit var friendRequestService: FriendRequestService
+    private lateinit var groupRequestService: GroupRequestService
+    private lateinit var bannedService: BannedService
     private lateinit var adapter: PostAdapter
     private var currentToast: Toast? = null
     private lateinit var sortByDateButton: Button
@@ -164,6 +175,9 @@ open class PostsActivity : AppCompatActivity(),
         reactionService = ClientUtils.getReactionService(token)
         userService = ClientUtils.getUserService(token)
         reportService = ClientUtils.getReportService(token)
+        friendRequestService = ClientUtils.getFriendRequestService(token)
+        groupRequestService = ClientUtils.getGroupRequestService(token)
+        bannedService = ClientUtils.getBannedService(token)
     }
     override fun onCommentButtonClick(post: Post) {
         val commentActivity = CommentActivity().apply {
@@ -377,22 +391,19 @@ open class PostsActivity : AppCompatActivity(),
         sortByDateButton.text = newText
     }
 
-    fun fetchPostsFromServer() {
+    private fun fetchPostsFromServer() {
         val call = if (sortingOrder == "ascending") postService.getAllAscending() else postService.getAllDescending()
 
         call.enqueue(object : Callback<List<Post>> {
-            override fun onResponse(
-                call: Call<List<Post>>,
-                response: Response<List<Post>>
-            ) {
+            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                 if (response.isSuccessful) {
                     val posts = response.body() ?: arrayListOf()
-                    updateListView(posts)
+                    fetchFriendsAndGroups(posts)
                 } else if (response.code() == 401) {
                     handleTokenExpired()
                 } else {
                     showToast("Failed to load posts")
-                   }
+                }
             }
 
             override fun onFailure(call: Call<List<Post>>, t: Throwable) {
@@ -400,6 +411,62 @@ open class PostsActivity : AppCompatActivity(),
             }
         })
     }
+    private fun fetchFriendsAndGroups(posts: List<Post>) {
+        val friendsCall = friendRequestService.getApprovedFriendsForUser(currentUser?.id ?: return)
+        val groupsCall = groupRequestService.getApprovedGroupsForUser(currentUser?.id ?: return)
+
+        friendsCall.enqueue(object : Callback<Set<User>> {
+            override fun onResponse(call: Call<Set<User>>, response: Response<Set<User>>) {
+                if (response.isSuccessful) {
+                    val friends = response.body() ?: emptyList()
+                    groupsCall.enqueue(object : Callback<Set<Group>> {
+                        override fun onResponse(call: Call<Set<Group>>, response: Response<Set<Group>>) {
+                            if (response.isSuccessful) {
+                                val groups = response.body() ?: emptyList()
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    filterPosts(posts, friends, groups)
+                                }
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Set<Group>>, t: Throwable) {
+                            showToast("Error: ${t.message}")
+                        }
+                    })
+                }
+            }
+
+            override fun onFailure(call: Call<Set<User>>, t: Throwable) {
+                showToast("Error: ${t.message}")
+            }
+        })
+    }
+    private suspend fun filterPosts(posts: List<Post>, friends: Collection<User>, groups: Collection<Group>) {
+        val filteredPosts = posts.filter { post ->
+            val isUserPost = post.user?.username == currentUser?.username
+            val isFriendPost = friends.any { it.username == post.user?.username }
+            val isGroupPost = post.group?.let { group ->
+             groups.any { it.id == group.id } &&
+                        !checkIfUserIsBlocked(group.id!!)
+            } ?: false
+
+            isUserPost || isFriendPost || isGroupPost
+        }
+        updateListView(filteredPosts)
+    }
+    private suspend fun checkIfUserIsBlocked(groupId: Long): Boolean {
+        return withContext(Dispatchers.IO) {
+            val call = bannedService.getAllBlockedGroupUsers(groupId)
+            val response = call.execute()
+            if (response.isSuccessful) {
+                val blockedUsers = response.body()
+                blockedUsers?.any { it.bannedUser?.id == currentUser?.id } ?: false
+            } else {
+                true
+            }
+        }
+    }
+
     private fun updateListView(posts: List<Post>) {
         val listView: ListView = findViewById(R.id.postsListView)
         adapter = PostAdapter(this, posts)
@@ -429,7 +496,6 @@ open class PostsActivity : AppCompatActivity(),
                             }
                         }
                     }
-                } else {
                 }
             }
 

@@ -11,12 +11,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.example.socialnetwork.R
 import com.example.socialnetwork.model.entity.Report
-import com.example.socialnetwork.model.entity.User
 import com.example.socialnetwork.utils.CircleTransform
 import com.google.firebase.FirebaseApp
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
+import java.time.format.DateTimeFormatter
 
 class ReportAdapter(
     context: Context,
@@ -57,7 +57,7 @@ class ReportAdapter(
         }
 
         val profileImageView: ImageView = view!!.findViewById(R.id.reportProfileImage)
-        val userTextView = view!!.findViewById<TextView>(R.id.userTextView)
+        val userTextView = view.findViewById<TextView>(R.id.userTextView)
         val dateTextView = view.findViewById<TextView>(R.id.dateTextView)
         val reportContentTextView = view.findViewById<TextView>(R.id.reportContentTextView)
         val reasonContentTextView = view.findViewById<TextView>(R.id.reasonContentTextView)
@@ -72,7 +72,7 @@ class ReportAdapter(
                 it.user.id?.let { it1 -> loadProfileImage(it1, profileImageView) }
 
                 userTextView.text = it.user.username
-                dateTextView.text = it.timestamp.toString()
+                dateTextView.text = it.timestamp.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
 
                 val postContent = it.post?.content
                 val commentText = it.comment?.text
