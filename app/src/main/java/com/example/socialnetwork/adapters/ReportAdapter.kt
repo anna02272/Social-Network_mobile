@@ -72,7 +72,7 @@ class ReportAdapter(
                 it.user.id?.let { it1 -> loadProfileImage(it1, profileImageView) }
 
                 userTextView.text = it.user.username
-                dateTextView.text = it.timestamp.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"))
+                dateTextView.text = it.timestamp.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
                 val postContent = it.post?.content
                 val commentText = it.comment?.text
