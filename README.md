@@ -93,41 +93,41 @@ ip_addr=192.168.0.26
 ## Images of project
 
 ### Login and Register
-<img src="https://github.com/user-attachments/assets/5ca88b4b-2d77-4a65-804b-824c3f4857f5" width="20%">
-<img src="https://github.com/user-attachments/assets/dc279adf-a038-44b7-9bad-5a1b9acfcfb2" width="20%">
+<img src="https://github.com/user-attachments/assets/5ca88b4b-2d77-4a65-804b-824c3f4857f5" width="30%">
+<img src="https://github.com/user-attachments/assets/dc279adf-a038-44b7-9bad-5a1b9acfcfb2" width="30%">
 
 ### Posts and reactions
-<img src="https://github.com/user-attachments/assets/c45c6d8e-1c6b-42e3-a6d9-cd7caa410c13" width="20%">
+<img src="https://github.com/user-attachments/assets/c45c6d8e-1c6b-42e3-a6d9-cd7caa410c13" width="30%">
 
 ### Create and edit post
-<img src="https://github.com/user-attachments/assets/f4fa9511-7214-4cff-a66a-483fcac9c1ef" width="20%">
-<img src="https://github.com/user-attachments/assets/42d99a26-60ac-4e76-80ae-1368d3794a92" width="20%">
+<img src="https://github.com/user-attachments/assets/f4fa9511-7214-4cff-a66a-483fcac9c1ef" width="30%">
+<img src="https://github.com/user-attachments/assets/42d99a26-60ac-4e76-80ae-1368d3794a92" width="30%">
 
 ### Comments
-<img src="https://github.com/user-attachments/assets/40e48882-5e3c-4a0f-ab15-97fc1d694c50" width="20%">
+<img src="https://github.com/user-attachments/assets/40e48882-5e3c-4a0f-ab15-97fc1d694c50" width="30%">
 
 ### Groups and create group
-<img src="https://github.com/user-attachments/assets/38f09a2d-c9a9-4fdf-bd53-a60f1725900b" width="20%">
-<img src="https://github.com/user-attachments/assets/aa24f352-8519-4651-bd7c-793da91bc674" width="20%">
-<img src="https://github.com/user-attachments/assets/7a0aa703-6e9f-4c2e-9084-f85332e38369" width="20%">
+<img src="https://github.com/user-attachments/assets/38f09a2d-c9a9-4fdf-bd53-a60f1725900b" width="30%">
+<img src="https://github.com/user-attachments/assets/aa24f352-8519-4651-bd7c-793da91bc674" width="30%">
+<img src="https://github.com/user-attachments/assets/7a0aa703-6e9f-4c2e-9084-f85332e38369" width="30%">
 
 ### Group requests and members
-<img src="https://github.com/user-attachments/assets/d46f2c28-291b-4f8b-b786-ca4fe3961953" width="20%">
-<img src="https://github.com/user-attachments/assets/e4ce684e-3f6a-46be-9351-bba509f5695e" width="20%">
+<img src="https://github.com/user-attachments/assets/d46f2c28-291b-4f8b-b786-ca4fe3961953" width="30%">
+<img src="https://github.com/user-attachments/assets/e4ce684e-3f6a-46be-9351-bba509f5695e" width="30%">
 
 ### Profile
-<img src="https://github.com/user-attachments/assets/c97c6458-231c-4a18-8d91-2b1be3c78f75" width="20%">
-<img src="https://github.com/user-attachments/assets/e8db8530-5a1a-4949-b937-a8dce0d43f0c" width="20%">
+<img src="https://github.com/user-attachments/assets/c97c6458-231c-4a18-8d91-2b1be3c78f75" width="30%">
+<img src="https://github.com/user-attachments/assets/e8db8530-5a1a-4949-b937-a8dce0d43f0c" width="30%">
 
 ### Friend requests
-<img src="https://github.com/user-attachments/assets/43f13a24-0d52-4c6d-b70b-b41b85fd4013" width="20%">
+<img src="https://github.com/user-attachments/assets/43f13a24-0d52-4c6d-b70b-b41b85fd4013" width="30%">
 
 ### Reports and blocked users
-<img src="https://github.com/user-attachments/assets/0f9a899e-79ae-48d5-9c62-dcae70a68057" width="20%">
-<img src="https://github.com/user-attachments/assets/7b1fd1e7-a48c-4398-af4a-356447777fea" width="20%">
-<img src="https://github.com/user-attachments/assets/d53fe4b2-3e12-45c4-9f55-bf3589a7fe00" width="20%">
+<img src="https://github.com/user-attachments/assets/0f9a899e-79ae-48d5-9c62-dcae70a68057" width="30%">
+<img src="https://github.com/user-attachments/assets/7b1fd1e7-a48c-4398-af4a-356447777fea" width="30%">
+<img src="https://github.com/user-attachments/assets/d53fe4b2-3e12-45c4-9f55-bf3589a7fe00" width="30%">
 
 ### Search for friends
-<img src="https://github.com/user-attachments/assets/8115f257-3f2a-4c35-8923-3245852414c5" width="20%">
+<img src="https://github.com/user-attachments/assets/8115f257-3f2a-4c35-8923-3245852414c5" width="30%">
 
 
